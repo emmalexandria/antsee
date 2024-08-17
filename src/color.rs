@@ -1,8 +1,6 @@
-use crate::ANSI_ESCAPE;
-
-pub trait Color: Clone {
-    fn get_escape_code(&self, background: bool) -> String;
-}
+use super::ansi::ANSICode;
+use crate::{style::Property, ANSI_ESCAPE};
+use std::fmt::Display;
 
 #[derive(Clone)]
 enum ColorSupport {
@@ -11,12 +9,37 @@ enum ColorSupport {
     TrueColor,
 }
 
+#[derive(Clone, Default)]
+pub struct Color<C: ANSICode> {
+    color: C,
+}
+
+impl<C: ANSICode> ANSICode for Color<C> {
+    fn get_codes(&self, bg: Option<bool>) -> Vec<u32> {
+        self.color.get_codes(bg)
+    }
+
+    fn get_reset_code(&self) -> u32 {
+        self.color.get_reset_code()
+    }
+}
+
+impl<C: ANSICode> Color<C> {
+    fn new(color: C) -> Self {
+        Self { color }
+    }
+
+    fn set(&mut self, color: C) {
+        self.color = color;
+    }
+}
+
 ///Color that can change based on a boolean value representing the determined color of the terminal
 ///background (defaults to dark)
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct AdaptiveColor<T>
 where
-    T: Color,
+    T: ANSICode,
 {
     is_dark: Option<bool>,
     light: T,
@@ -53,7 +76,7 @@ impl AdaptiveColor<TrueColor> {
     }
 }
 
-impl<T: Color> AdaptiveColor<T> {
+impl<T: ANSICode> AdaptiveColor<T> {
     pub fn new(light: T, dark: T, is_dark: Option<bool>) -> Self {
         Self {
             is_dark,
@@ -78,13 +101,73 @@ impl<T: Color> AdaptiveColor<T> {
     }
 }
 
-impl<T: Color> Color for AdaptiveColor<T> {
-    fn get_escape_code(&self, background: bool) -> String {
-        if self.is_dark.is_some_and(|v| v == false) {
-            return self.light.get_escape_code(background);
+impl<C: ANSICode> ANSICode for AdaptiveColor<C> {
+    fn get_codes(&self, bg: Option<bool>) -> Vec<u32> {
+        match self.is_dark() {
+            true => self.dark.get_codes(bg),
+            false => self.light.get_codes(bg),
         }
+    }
 
-        return self.dark.get_escape_code(background);
+    fn get_reset_code(&self) -> u32 {
+        return Property::Reset.get_reset_code();
+    }
+}
+
+impl<C: ANSICode> AdaptiveColor<C> {
+    fn is_dark(&self) -> bool {
+        match self.is_dark {
+            Some(true) | None => true,
+            Some(false) => false,
+        }
+    }
+}
+
+#[derive(Clone, Default)]
+pub struct MultiColor {
+    truecolor: TrueColor,
+    ansi256: ANSI256,
+    ansi16: ANSI16,
+
+    detected_support_level: Option<ColorSupport>,
+}
+
+impl ANSICode for MultiColor {
+    fn get_codes(&self, bg: Option<bool>) -> Vec<u32> {
+        if self.detected_support_level.is_none() {
+            return self.ansi16.get_codes(bg);
+        }
+        match self.detected_support_level.clone().unwrap() {
+            ColorSupport::TrueColor => self.truecolor.get_codes(bg),
+            ColorSupport::ANSI256 => self.ansi256.get_codes(bg),
+            ColorSupport::ANSI16 => self.ansi16.get_codes(bg),
+        }
+    }
+
+    fn get_reset_code(&self) -> u32 {
+        if self.detected_support_level.is_none() {
+            return self.ansi16.get_reset_code();
+        }
+        match self.detected_support_level.clone().unwrap() {
+            ColorSupport::TrueColor => self.truecolor.get_reset_code(),
+            ColorSupport::ANSI256 => self.ansi256.get_reset_code(),
+            ColorSupport::ANSI16 => self.ansi16.get_reset_code(),
+        }
+    }
+}
+
+#[derive(Clone, Default)]
+pub struct AdaptiveMultiColor {
+    color: AdaptiveColor<MultiColor>,
+}
+
+impl ANSICode for AdaptiveMultiColor {
+    fn get_codes(&self, bg: Option<bool>) -> Vec<u32> {
+        return self.color.get_codes(bg);
+    }
+
+    fn get_reset_code(&self) -> u32 {
+        return self.color.get_reset_code();
     }
 }
 
@@ -114,53 +197,6 @@ impl RGB {
     }
 }
 
-#[derive(Clone, Default)]
-pub struct TrueColor(RGB);
-
-impl Color for TrueColor {
-    fn get_escape_code(&self, bg: bool) -> String {
-        let start_code: &str;
-        match bg {
-            true => start_code = "[38;2;",
-            false => start_code = "[48;2;",
-        }
-
-        let rgb = &self.0;
-        return format!(
-            "{}{}{};{};{}m",
-            ANSI_ESCAPE, start_code, rgb.r, rgb.g, rgb.b
-        );
-    }
-}
-
-#[derive(Clone)]
-pub struct MultiColor {
-    truecolor: TrueColor,
-    ansi256: ANSI256,
-    ansi16: ANSI16,
-
-    detected_support_level: Option<ColorSupport>,
-}
-
-impl Color for MultiColor {
-    fn get_escape_code(&self, background: bool) -> String {
-        if self.detected_support_level.is_none() {
-            return self.ansi16.get_escape_code(background);
-        }
-        match self.detected_support_level.clone().unwrap() {
-            ColorSupport::TrueColor => self.truecolor.get_escape_code(background),
-            ColorSupport::ANSI256 => self.ansi256.get_escape_code(background),
-            ColorSupport::ANSI16 => self.ansi16.get_escape_code(background),
-        }
-    }
-}
-
-#[derive(Clone)]
-pub struct AdaptiveMultiColor {
-    light: MultiColor,
-    dark: MultiColor,
-}
-
 impl From<[u8; 3]> for RGB {
     fn from(value: [u8; 3]) -> Self {
         Self {
@@ -168,6 +204,36 @@ impl From<[u8; 3]> for RGB {
             g: value[1],
             b: value[2],
         }
+    }
+}
+
+#[derive(Clone, Default)]
+pub struct TrueColor(RGB);
+
+impl ANSICode for TrueColor {
+    fn get_codes(&self, bg: Option<bool>) -> Vec<u32> {
+        let mut codes: Vec<u32> = Vec::new();
+        match bg {
+            None | Some(false) => codes.push(38),
+            Some(true) => codes.push(48),
+        }
+
+        codes.push(2);
+        codes.push(self.0.r.into());
+        codes.push(self.0.g.into());
+        codes.push(self.0.b.into());
+
+        codes
+    }
+
+    fn get_reset_code(&self) -> u32 {
+        return Property::Reset.get_reset_code();
+    }
+}
+
+impl TrueColor {
+    fn new(color: RGB) -> Self {
+        Self(color)
     }
 }
 
@@ -197,17 +263,27 @@ pub enum ANSI16 {
     Reset,
 }
 
-impl Color for ANSI16 {
-    fn get_escape_code(&self, background: bool) -> String {
-        match background {
-            true => format!("{}[{}m", ANSI_ESCAPE, self.get_background_code_num()),
-            false => format!("{}[{}m", ANSI_ESCAPE, self.get_foreground_code_num()),
-        }
+impl Default for ANSI16 {
+    fn default() -> Self {
+        Self::Default
+    }
+}
+
+impl ANSICode for ANSI16 {
+    fn get_codes(&self, bg: Option<bool>) -> Vec<u32> {
+        vec![match bg {
+            Some(true) => self.get_background_code(),
+            None | Some(false) => self.get_foreground_code(),
+        }]
+    }
+
+    fn get_reset_code(&self) -> u32 {
+        return Property::Reset.get_reset_code();
     }
 }
 
 impl ANSI16 {
-    fn get_foreground_code_num(&self) -> u32 {
+    fn get_foreground_code(&self) -> u32 {
         match self {
             Self::Black => 30,
             Self::Red => 31,
@@ -230,27 +306,9 @@ impl ANSI16 {
         }
     }
 
-    fn get_background_code_num(&self) -> u32 {
-        match self {
-            Self::Black => 40,
-            Self::Red => 41,
-            Self::Green => 42,
-            Self::Yellow => 43,
-            Self::Blue => 44,
-            Self::Magenta => 45,
-            Self::Cyan => 46,
-            Self::White => 47,
-            Self::BrightBlack => 100,
-            Self::BrightRed => 101,
-            Self::BrightGreen => 102,
-            Self::BrightYellow => 103,
-            Self::BrightBlue => 104,
-            Self::BrightMagenta => 105,
-            Self::BrightCyan => 106,
-            Self::BrightWhite => 107,
-            Self::Default => 49,
-            Self::Reset => 0,
-        }
+    fn get_background_code(&self) -> u32 {
+        //Background values are just offset by 10
+        self.get_foreground_code() + 10
     }
 }
 
@@ -261,11 +319,23 @@ pub enum ANSI256 {
     Grey0 = 16,
 }
 
-impl Color for ANSI256 {
-    fn get_escape_code(&self, background: bool) -> String {
-        match self {
-            Self::ANSI16(c) => c.get_escape_code(background),
-            _ => todo!(),
-        }
+impl Default for ANSI256 {
+    fn default() -> Self {
+        Self::ANSI16(ANSI16::White)
     }
+}
+
+impl ANSICode for ANSI256 {
+    fn get_codes(&self, bg: Option<bool>) -> Vec<u32> {
+        todo!()
+    }
+
+    fn get_reset_code(&self) -> u32 {
+        Property::Reset.get_reset_code()
+    }
+}
+
+#[cfg(test)]
+mod color_tests {
+    use super::*;
 }
