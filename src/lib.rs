@@ -5,5 +5,6 @@ mod style;
 
 const ANSI_ESCAPE: &str = "\x1b[";
 
-pub use color::{AdaptiveMultiColor, Color, MultiColor, TrueColor};
+pub use color::{Color, ColorLevels, ColorValue, ANSI16, RGB};
+pub use style::Property;
 pub use style::Style;

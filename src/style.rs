@@ -8,43 +8,35 @@ use crate::color::Color;
 use super::ansi::ANSICode;
 use super::display::StyledString;
 
-pub trait Styleable<S, C: ANSICode> {
+pub trait Styleable<S> {
     ///Converts any string type to a new styled string. Resets a styled strings style if called on
     ///one.
-    fn to_styled(&self) -> StyledString<C>;
+    fn to_styled(&self) -> StyledString;
 }
 
-impl<S: Display, C: ANSICode> Styleable<S, C> for S {
-    fn to_styled(&self) -> StyledString<C> {
+impl<S: Display> Styleable<S> for S {
+    fn to_styled(&self) -> StyledString {
         return StyledString::new(self.to_string());
     }
 }
 
 #[derive(Clone, Default)]
-pub struct Style<C: ANSICode> {
-    pub foreground: Color<C>,
-    pub background: Color<C>,
+pub struct Style {
+    pub foreground: Color,
+    pub background: Color,
 
     properties: Vec<Property>,
 
     pub prefix_with_reset: bool,
 }
 
-impl<'a, C: ANSICode> Style<C> {
-    pub fn paint<S: AsRef<str>>(&self, s: S) -> String {
-        let styled_str = s.as_ref().to_string();
-
-        return styled_str;
-    }
-}
-
-impl<'a, C: ANSICode> Style<C> {
-    pub fn with_foreground(mut self, foreground: Color<C>) -> Self {
+impl<'a> Style {
+    pub fn with_foreground(mut self, foreground: Color) -> Self {
         self.foreground = foreground;
         self
     }
 
-    pub fn with_background(mut self, background: Color<C>) -> Self {
+    pub fn with_background(mut self, background: Color) -> Self {
         self.background = background;
         self
     }
@@ -101,7 +93,7 @@ impl ANSICode for Property {
         }]
     }
 
-    fn get_reset_code(&self) -> u32 {
+    fn get_reset_code(&self, _bg: Option<bool>) -> u32 {
         match self {
             Self::Reset => 0,
             Self::Bold | Self::Dim => 22,

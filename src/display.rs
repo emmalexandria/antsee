@@ -7,24 +7,24 @@ use super::{
 
 use std::fmt::Display;
 
-pub struct StyledString<C: ANSICode> {
+pub struct StyledString {
     content: String,
-    style: Style<C>,
+    style: Style,
 }
 
-impl<C: ANSICode> Display for StyledString<C> {
+impl Display for StyledString {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(&self.style.paint(&self.content))
     }
 }
 
-impl<C: ANSICode> AsRef<str> for StyledString<C> {
+impl AsRef<str> for StyledString {
     fn as_ref(&self) -> &str {
         return &self.content;
     }
 }
 
-impl<C: ANSICode> StyledString<C> {
+impl StyledString {
     pub fn new<S: AsRef<str>>(content: S) -> Self {
         Self {
             content: content.as_ref().to_string(),
@@ -32,19 +32,19 @@ impl<C: ANSICode> StyledString<C> {
         }
     }
 
-    pub fn foreground(mut self, color: Color<C>) -> Self {
+    pub fn foreground(mut self, color: Color) -> Self {
         self.style.foreground = color;
         self
     }
 
-    pub fn background(mut self, color: Color<C>) -> Self {
+    pub fn background(mut self, color: Color) -> Self {
         self.style.background = color;
         self
     }
 }
 
-pub struct StyledStringList<C: ANSICode> {
-    content: Vec<StyledString<C>>,
+pub struct StyledStringList {
+    content: Vec<StyledString>,
 }
 
-impl<C: ANSICode> StyledString<C> {}
+impl StyledString {}
