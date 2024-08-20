@@ -9,11 +9,11 @@ use super::ansi::ANSICode;
 use super::display::StyledString;
 
 pub trait Styleable<S> {
-    ///Converts to a new styled string. Resets a styled strings style if called on
+    ///Converts to a new [StyledString]. Resets a styled strings style if called on
     ///one.
     fn to_styled_string(&self) -> StyledString;
 
-    ///Converts to a styled string with an associated style
+    ///Converts to a [StyledString] with an associated [Style]
     fn with_style(&self, style: Style) -> StyledString;
 }
 
@@ -28,7 +28,7 @@ impl<S: Display> Styleable<S> for S {
 }
 
 ///A style is a combination of a foreground and background [Color], and a list of [Property](Properties)
-#[derive(Clone, Copy, Eq, PartialEq, PartialOrd, Hash, Debug, Default)]
+#[derive(Clone, Eq, PartialEq, PartialOrd, Hash, Debug, Default)]
 pub struct Style {
     pub foreground: Color,
     pub background: Color,

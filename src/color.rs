@@ -2,7 +2,7 @@ use super::ansi::ANSICode;
 use crate::{style::Property, ANSI_ESCAPE};
 use std::fmt::Display;
 
-///Represents a single color in ANSI16, ANSI256, or RGB
+///Represents a single color in [ANSI16], ANSI256, or [RGB]
 
 #[derive(Clone, Copy, Eq, PartialEq, PartialOrd, Hash, Debug)]
 pub enum ColorVal {
@@ -40,8 +40,25 @@ impl ColorVal {
     }
 }
 
-///A color with representations in ANSI16 and optionally ANSI256 and RGB)
+impl From<ANSI16> for ColorVal {
+    fn from(value: ANSI16) -> Self {
+        Self::Base(value)
+    }
+}
 
+impl From<u8> for ColorVal {
+    fn from(value: u8) -> Self {
+        Self::ANSI256(value)
+    }
+}
+
+impl From<RGB> for ColorVal {
+    fn from(value: RGB) -> Self {
+        Self::RGB(value)
+    }
+}
+
+///Holds [Color] representations for [ANSI16] (and optionally ANSI256 and [RGB])
 #[derive(Clone, Copy, Eq, PartialEq, PartialOrd, Hash, Debug, Default)]
 pub struct ColorLevels(ColorVal, Option<ColorVal>, Option<ColorVal>);
 
@@ -59,16 +76,15 @@ impl From<ColorVal> for ColorLevels {
 }
 
 ///Color (optionally) represents color values for terminals with
-///support for ANSI16, ANSI256, or Truecolor. It can hold another set of colors for
+///support for [ANSI16], ANSI256, or [RGB]. It can hold another set of [Color](Colors) for
 ///terminals with light backgrounds.
-
 #[derive(Clone, Copy, Eq, PartialEq, PartialOrd, Hash, Debug, Default)]
 pub struct Color {
-    ///Default colors for dark backgrounds
+    ///Default [ColorLevels] for dark backgrounds
     pub color: ColorLevels,
-    ///Colors for light backgrounds
+    ///Optional [ColorLevels] for light backgrounds
     pub light_color: Option<ColorLevels>,
-    ///The support (if determined) of the terminal (ANSI16, ANSI256, Truecolor)
+    ///The support (if determined) of the terminal ([ANSI16], ANSI256, [RGB])
     pub color_support: Option<(bool, bool, bool)>,
     ///Determines behaviour if color support is unknown. Optimistic colors will always select the
     ///"highest" level of support.
@@ -99,10 +115,10 @@ impl From<RGB> for Color {
 }
 
 impl Color {
-    pub fn new(color: ColorVal) -> Self {
+    pub fn new<C: Into<ColorVal>>(color: C) -> Self {
         Self {
-            color: ColorLevels(color.clone(), None, None),
-            light_color: Some(ColorLevels(color, None, None)),
+            color: ColorLevels(color.into(), None, None),
+            light_color: None,
             color_support: None,
             optimistic_colors: false,
             is_light_bg: None,
@@ -327,5 +343,44 @@ impl ANSI16 {
     fn get_background_code(&self) -> u32 {
         //Background values are just offset by 10
         self.get_foreground_code() + 10
+    }
+}
+
+#[cfg(test)]
+mod color_tests {
+    use super::*;
+
+    fn create_test_color() -> Color {
+        Color::new(ANSI16::Red).with_colors(ColorLevels(
+            ANSI16::Red.into(),
+            Some(160.into()),
+            Some(RGB::rgb(255, 0, 0).into()),
+        ))
+    }
+
+    #[test]
+    fn test_optimistic_colors() {
+        let mut color = create_test_color().with_optimistic_colors(true);
+
+        assert!(color.get_codes(Some(false)).len() == 5);
+
+        color.optimistic_colors = false;
+
+        assert!(color.get_codes(Some(false)).len() == 1);
+    }
+
+    #[test]
+    fn test_color_degradation() {
+        let mut color = create_test_color().with_color_support((true, true, false));
+
+        assert!(color.get_codes(Some(false)).len() == 3);
+
+        color.color_support = Some((true, true, true));
+
+        assert!(color.get_codes(Some(false)).len() == 5);
+
+        color.color_support = Some((true, false, false));
+
+        assert!(color.get_codes(Some(false)).len() == 1);
     }
 }
