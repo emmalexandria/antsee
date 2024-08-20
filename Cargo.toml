@@ -5,7 +5,7 @@ description = "A simple, dependency free, and versatile crate for terminal color
 license = "MIT"
 repository = "https://github.com/emmalexandria/antsee"
 readme = "README.md"
-version = "1.0.0"
+version = "1.0.1"
 edition = "2021"
 keywords = ["terminal", "ansi", "colors"]
 
