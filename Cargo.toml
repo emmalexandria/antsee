@@ -1,5 +1,10 @@
 [package]
 name = "antsee"
+author = "Emma Alexandria"
+license = "MIT"
+repository = "https://github.com/emmalexandria/antsee"
+readme = "README.md"
 version = "1.0.0"
 edition = "2021"
+keywords = ["terminal", "ansi", "colors"]
 
