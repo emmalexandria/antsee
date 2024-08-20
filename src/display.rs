@@ -10,7 +10,8 @@ use super::{
 
 use std::fmt::Display;
 
-///A string with an associated style
+///A string with an associated [Style]
+#[derive(Clone, Eq, PartialEq, PartialOrd, Hash, Debug)]
 pub struct StyledString {
     pub content: String,
     pub style: Style,

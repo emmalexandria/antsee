@@ -3,7 +3,8 @@ use crate::{style::Property, ANSI_ESCAPE};
 use std::fmt::Display;
 
 ///Represents a single color in ANSI16, ANSI256, or RGB
-#[derive(Clone, Copy)]
+
+#[derive(Clone, Copy, Eq, PartialEq, PartialOrd, Hash, Debug)]
 pub enum ColorVal {
     Base(ANSI16),
     ANSI256(u8),
@@ -40,7 +41,8 @@ impl ColorVal {
 }
 
 ///A color with representations in ANSI16 and optionally ANSI256 and RGB)
-#[derive(Default, Clone)]
+
+#[derive(Clone, Copy, Eq, PartialEq, PartialOrd, Hash, Debug, Default)]
 pub struct ColorLevels(ColorVal, Option<ColorVal>, Option<ColorVal>);
 
 impl From<ColorVal> for ColorLevels {
@@ -59,7 +61,8 @@ impl From<ColorVal> for ColorLevels {
 ///Color (optionally) represents color values for terminals with
 ///support for ANSI16, ANSI256, or Truecolor. It can hold another set of colors for
 ///terminals with light backgrounds.
-#[derive(Clone, Default)]
+
+#[derive(Clone, Copy, Eq, PartialEq, PartialOrd, Hash, Debug, Default)]
 pub struct Color {
     ///Default colors for dark backgrounds
     pub color: ColorLevels,
@@ -199,7 +202,7 @@ impl Color {
 }
 
 ///An RGB value
-#[derive(Clone, Copy, Default)]
+#[derive(Clone, Copy, Eq, PartialEq, PartialOrd, Hash, Debug, Default)]
 pub struct RGB {
     pub r: u8,
     pub g: u8,
@@ -259,7 +262,8 @@ impl ANSICode for RGB {
 }
 
 ///The standard 16 terminal colors
-#[derive(Clone, Copy, Default)]
+
+#[derive(Clone, Copy, Eq, PartialEq, PartialOrd, Hash, Debug, Default)]
 pub enum ANSI16 {
     Black,
     BrightBlack,

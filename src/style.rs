@@ -27,8 +27,8 @@ impl<S: Display> Styleable<S> for S {
     }
 }
 
-///A style is a combination of foreground, background, and a list of properties
-#[derive(Clone, Default)]
+///A style is a combination of a foreground and background [Color], and a list of [Property](Properties)
+#[derive(Clone, Copy, Eq, PartialEq, PartialOrd, Hash, Debug, Default)]
 pub struct Style {
     pub foreground: Color,
     pub background: Color,
@@ -95,7 +95,7 @@ impl<'a> Style {
 }
 
 ///A property represents things like bold text, underlines, etc.
-#[derive(Clone, PartialEq)]
+#[derive(Clone, Copy, Eq, PartialEq, PartialOrd, Hash, Debug)]
 pub enum Property {
     Reset,
     Bold,
