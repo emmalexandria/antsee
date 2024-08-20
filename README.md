@@ -1,7 +1,5 @@
 # antsee
 
-## Goals
-
 `antsee` is a lightweight and dependency free ANSI library with the primary goal of allowing for flexibility in styling. This is achieved primarily through the way it models colours. A `Color` in `antsee` represents two colors. One is for use on dark terminal backgrounds, and the other is for use on light terminal backgrounds. Further, each colour can contain three colour values for terminals that support ANSI16, ANSI256, and RGB. If given the appropriate information, `Color` will choose the appropriate color for the environment the application is running in.
 
 This crate does not aim to do the work of detecting the color support of the current terminal, nor whether the background is dark or light.
