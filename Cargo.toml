@@ -3,5 +3,3 @@ name = "antsee"
 version = "0.1.0"
 edition = "2021"
 
-[dependencies]
-term_color_support = "0.1.1"

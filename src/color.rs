@@ -4,19 +4,19 @@ use std::fmt::Display;
 
 ///Represents a single color in ANSI16, ANSI256, or RGB
 #[derive(Clone, Copy)]
-pub enum ColorValue {
+pub enum ColorVal {
     Base(ANSI16),
     ANSI256(u8),
     RGB(RGB),
 }
 
-impl Default for ColorValue {
+impl Default for ColorVal {
     fn default() -> Self {
         Self::Base(ANSI16::Default)
     }
 }
 
-impl ANSICode for ColorValue {
+impl ANSICode for ColorVal {
     fn get_codes(&self, bg: Option<bool>) -> Vec<u32> {
         match self {
             Self::Base(c) => c.get_codes(bg),
@@ -30,7 +30,7 @@ impl ANSICode for ColorValue {
     }
 }
 
-impl ColorValue {
+impl ColorVal {
     fn get_ansi_256_codes(val: &u8, bg: Option<bool>) -> Vec<u32> {
         match bg {
             Some(false) | None => vec![38, 5, *val as u32],
@@ -39,13 +39,26 @@ impl ColorValue {
     }
 }
 
+///A color with representations in ANSI16 and optionally ANSI256 and RGB)
 #[derive(Default, Clone)]
-pub struct ColorLevels(ColorValue, Option<ColorValue>, Option<ColorValue>);
+pub struct ColorLevels(ColorVal, Option<ColorVal>, Option<ColorVal>);
 
-///Color does not represent a single color, but rather (optionally) color values for terminals with
-///support for ANSI16, ANSI256, or Truecolor. Additionally, it can hold another set of colors for
-///terminals with light backgrounds. When applied, it will automatically select the appropriate
-///color based on the information it has.
+impl From<ColorVal> for ColorLevels {
+    fn from(value: ColorVal) -> Self {
+        let mut ret_val = Self::default();
+        match value {
+            ColorVal::Base(_) => ret_val.0 = value,
+            ColorVal::ANSI256(_) => ret_val.1 = Some(value),
+            ColorVal::RGB(_) => ret_val.2 = Some(value),
+        }
+
+        ret_val
+    }
+}
+
+///Color (optionally) represents color values for terminals with
+///support for ANSI16, ANSI256, or Truecolor. It can hold another set of colors for
+///terminals with light backgrounds.
 #[derive(Clone, Default)]
 pub struct Color {
     ///Default colors for dark backgrounds
@@ -61,8 +74,29 @@ pub struct Color {
     pub is_light_bg: Option<bool>,
 }
 
+impl From<ColorVal> for Color {
+    fn from(value: ColorVal) -> Self {
+        let mut ret_val = Self::default();
+        ret_val.color = ColorLevels::from(value);
+
+        ret_val
+    }
+}
+
+impl From<ANSI16> for Color {
+    fn from(value: ANSI16) -> Self {
+        Self::from(ColorVal::Base(value))
+    }
+}
+
+impl From<RGB> for Color {
+    fn from(value: RGB) -> Self {
+        Self::from(ColorVal::RGB(value))
+    }
+}
+
 impl Color {
-    pub fn new(color: ColorValue) -> Self {
+    pub fn new(color: ColorVal) -> Self {
         Self {
             color: ColorLevels(color.clone(), None, None),
             light_color: Some(ColorLevels(color, None, None)),
@@ -77,21 +111,21 @@ impl Color {
         self
     }
 
-    pub fn with_color(mut self, color: ColorValue) -> Self {
+    pub fn with_color(mut self, color: ColorVal) -> Self {
         match color {
-            ColorValue::RGB(_) => self.color.2 = Some(color),
-            ColorValue::ANSI256(_) => self.color.1 = Some(color),
-            ColorValue::Base(_) => self.color.0 = color,
+            ColorVal::RGB(_) => self.color.2 = Some(color),
+            ColorVal::ANSI256(_) => self.color.1 = Some(color),
+            ColorVal::Base(_) => self.color.0 = color,
         }
         self
     }
 
-    pub fn with_light_color(mut self, color: ColorValue) -> Self {
+    pub fn with_light_color(mut self, color: ColorVal) -> Self {
         let mut range = self.light_color.unwrap_or_default();
         match color {
-            ColorValue::RGB(_) => range.0 = color,
-            ColorValue::ANSI256(_) => range.1 = Some(color),
-            ColorValue::Base(_) => range.2 = Some(color),
+            ColorVal::RGB(_) => range.0 = color,
+            ColorVal::ANSI256(_) => range.1 = Some(color),
+            ColorVal::Base(_) => range.2 = Some(color),
         }
 
         self.light_color = Some(range);
@@ -150,7 +184,7 @@ impl Color {
         return color.0.get_codes(bg);
     }
 
-    fn get_color_without_support_info(&self, levels: &ColorLevels) -> ColorValue {
+    fn get_color_without_support_info(&self, levels: &ColorLevels) -> ColorVal {
         if self.optimistic_colors {
             if levels.2.is_some() {
                 return levels.2.as_ref().unwrap().clone();
@@ -164,6 +198,7 @@ impl Color {
     }
 }
 
+///An RGB value
 #[derive(Clone, Copy, Default)]
 pub struct RGB {
     pub r: u8,
@@ -172,10 +207,12 @@ pub struct RGB {
 }
 
 impl RGB {
+    ///Construct a new RGB value from the red, green, and blue components
     pub fn rgb(r: u8, g: u8, b: u8) -> Self {
         Self { r, g, b }
     }
 
+    ///Construct a new RGB value from a hex string
     pub fn hex<S: AsRef<str>>(hex: S) -> Option<Self> {
         let s = hex.as_ref().trim_start_matches("#");
         if s.len() > 6 {
@@ -221,6 +258,7 @@ impl ANSICode for RGB {
     }
 }
 
+///The standard 16 terminal colors
 #[derive(Clone, Copy, Default)]
 pub enum ANSI16 {
     Black,

@@ -1,4 +1,7 @@
-use crate::color::{Color, ANSI16};
+use crate::{
+    color::{Color, ANSI16},
+    Property,
+};
 
 use super::{
     ansi::ANSICode,
@@ -7,9 +10,10 @@ use super::{
 
 use std::fmt::Display;
 
+///A string with an associated style
 pub struct StyledString {
-    content: String,
-    style: Style,
+    pub content: String,
+    pub style: Style,
 }
 
 impl Display for StyledString {
@@ -25,26 +29,40 @@ impl AsRef<str> for StyledString {
 }
 
 impl StyledString {
-    pub fn new<S: AsRef<str>>(content: S) -> Self {
+    pub fn new<S: AsRef<str>>(content: S, style: Option<Style>) -> Self {
         Self {
             content: content.as_ref().to_string(),
-            style: Style::default(),
+            style: style.unwrap_or_default(),
         }
     }
 
-    pub fn foreground(mut self, color: Color) -> Self {
-        self.style.foreground = color;
+    pub fn with_foreground<C: Into<Color>>(mut self, color: C) -> Self {
+        self.style.foreground = color.into();
         self
     }
 
-    pub fn background(mut self, color: Color) -> Self {
-        self.style.background = color;
+    pub fn with_background<C: Into<Color>>(mut self, color: C) -> Self {
+        self.style.background = color.into();
         self
     }
-}
 
-pub struct StyledStringList {
-    content: Vec<StyledString>,
-}
+    pub fn with_property(mut self, prop: Property) -> Self {
+        self.style.add_property(prop);
+        self
+    }
 
-impl StyledString {}
+    pub fn with_properties<V: Into<Vec<Property>>>(mut self, props: V) -> Self {
+        for p in props.into() {
+            self.style.add_property(p);
+        }
+        self
+    }
+
+    pub fn foreground<C: Into<Color>>(&mut self, color: C) {
+        self.style.foreground = color.into();
+    }
+
+    pub fn background<C: Into<Color>>(&mut self, color: C) {
+        self.style.foreground = color.into();
+    }
+}

@@ -9,17 +9,25 @@ use super::ansi::ANSICode;
 use super::display::StyledString;
 
 pub trait Styleable<S> {
-    ///Converts any string type to a new styled string. Resets a styled strings style if called on
+    ///Converts to a new styled string. Resets a styled strings style if called on
     ///one.
-    fn to_styled(&self) -> StyledString;
+    fn to_styled_string(&self) -> StyledString;
+
+    ///Converts to a styled string with an associated style
+    fn with_style(&self, style: Style) -> StyledString;
 }
 
 impl<S: Display> Styleable<S> for S {
-    fn to_styled(&self) -> StyledString {
-        return StyledString::new(self.to_string());
+    fn to_styled_string(&self) -> StyledString {
+        return StyledString::new(self.to_string(), None);
+    }
+
+    fn with_style(&self, style: Style) -> StyledString {
+        return StyledString::new(self.to_string(), Some(style));
     }
 }
 
+///A style is a combination of foreground, background, and a list of properties
 #[derive(Clone, Default)]
 pub struct Style {
     pub foreground: Color,
@@ -31,16 +39,19 @@ pub struct Style {
 }
 
 impl<'a> Style {
-    pub fn with_foreground(mut self, foreground: Color) -> Self {
-        self.foreground = foreground;
+    ///Set the foreground
+    pub fn with_foreground<C: Into<Color>>(mut self, foreground: C) -> Self {
+        self.foreground = foreground.into();
         self
     }
 
-    pub fn with_background(mut self, background: Color) -> Self {
-        self.background = background;
+    ///Set the background
+    pub fn with_background<C: Into<Color>>(mut self, background: C) -> Self {
+        self.background = background.into();
         self
     }
 
+    ///Set a property
     pub fn with_property(mut self, prop: Property) -> Self {
         if !&self.properties.contains(&prop) {
             self.properties.push(prop);
@@ -48,6 +59,30 @@ impl<'a> Style {
         self
     }
 
+    pub fn add_property(&mut self, prop: Property) {
+        if !&self.properties.contains(&prop) {
+            self.properties.push(prop);
+        }
+    }
+
+    pub fn remove_property(&mut self, prop: Property) {
+        self.properties = self
+            .properties
+            .iter()
+            .cloned()
+            .filter(|v| return *v != prop)
+            .collect()
+    }
+
+    pub fn toggle_property(&mut self, prop: Property) {
+        if self.properties.contains(&prop) {
+            self.remove_property(prop)
+        } else {
+            self.add_property(prop)
+        }
+    }
+
+    ///Reset the style
     pub fn reset_style(&mut self) {
         self.properties.clear();
         self.foreground = Color::default();
@@ -59,6 +94,7 @@ impl<'a> Style {
     }
 }
 
+///A property represents things like bold text, underlines, etc.
 #[derive(Clone, PartialEq)]
 pub enum Property {
     Reset,

@@ -35,7 +35,7 @@ impl Style {
             Self::write_code(prop, writer, None, &mut has_written)?;
         }
 
-        writer.write_char('m');
+        writer.write_char('m')?;
 
         Ok(())
     }
