@@ -14,17 +14,18 @@ This crate does not aim to do the work of detecting the color support of the cur
 ```rust
 let styled_str = "Hi there"
         .to_styled_string()
-        .with_foreground(RGB::rgb(134, 100, 50))
-        .with_background(ANSI16::BrightBlack)
-        .with_property(Property::Underline);
+        .with_fg(RGB::rgb(134, 100, 50))
+        .with_bg(ANSI16::BrightBlack)
+        .underline()
+        .bold();
 ```
 
 ```rust
 let style = Style::default()
-        .with_foreground(Color::from(ANSI16::Red))
-        .with_background(Color::from(ANSI16::Black))
-        .with_property(Property::Bold)
-        .with_property(Property::Underline);
+        .with_fg(Color::from(ANSI16::Red))
+        .with_bg(Color::from(ANSI16::Black))
+        .with_prop(Property::Bold)
+        .with_prop(Property::Underline);
 
 let output = style.paint("Hello");
 ```
