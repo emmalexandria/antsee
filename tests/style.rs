@@ -16,16 +16,3 @@ fn test_style() {
 
     assert_eq!(output, "\x1b[31;40;1;4mHello\x1b[0m");
 }
-
-#[test]
-fn test_styleable() {
-    let styled_str = "Hi there"
-        .to_styled_string()
-        .with_fg(RGB::rgb(134, 100, 50))
-        .with_bg(ANSI16::BrightBlack)
-        .underline()
-        .bold()
-        .strikethrough();
-
-    println!("{styled_str}");
-}

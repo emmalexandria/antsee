@@ -7,7 +7,7 @@ use std::fmt::Display;
 #[derive(Clone, Copy, Eq, PartialEq, PartialOrd, Hash, Debug)]
 pub enum ColorVal {
     Base(ANSI16),
-    ANSI256(u8),
+    Fixed(u8),
     RGB(RGB),
 }
 
@@ -21,7 +21,7 @@ impl ANSICode for ColorVal {
     fn get_codes(&self, bg: Option<bool>) -> Vec<u32> {
         match self {
             Self::Base(c) => c.get_codes(bg),
-            Self::ANSI256(c) => Self::get_ansi_256_codes(c, bg),
+            Self::Fixed(c) => Self::get_ansi_256_codes(c, bg),
             Self::RGB(c) => c.get_codes(bg),
         }
     }
@@ -48,7 +48,7 @@ impl From<ANSI16> for ColorVal {
 
 impl From<u8> for ColorVal {
     fn from(value: u8) -> Self {
-        Self::ANSI256(value)
+        Self::Fixed(value)
     }
 }
 
@@ -67,7 +67,7 @@ impl From<ColorVal> for ColorLevels {
         let mut ret_val = Self::default();
         match value {
             ColorVal::Base(_) => ret_val.0 = value,
-            ColorVal::ANSI256(_) => ret_val.1 = Some(value),
+            ColorVal::Fixed(_) => ret_val.1 = Some(value),
             ColorVal::RGB(_) => ret_val.2 = Some(value),
         }
 
@@ -121,7 +121,7 @@ impl Color {
     pub fn with_color(mut self, color: ColorVal) -> Self {
         match color {
             ColorVal::RGB(_) => self.color.2 = Some(color),
-            ColorVal::ANSI256(_) => self.color.1 = Some(color),
+            ColorVal::Fixed(_) => self.color.1 = Some(color),
             ColorVal::Base(_) => self.color.0 = color,
         }
         self
@@ -131,7 +131,7 @@ impl Color {
         let mut range = self.light_color.unwrap_or_default();
         match color {
             ColorVal::RGB(_) => range.0 = color,
-            ColorVal::ANSI256(_) => range.1 = Some(color),
+            ColorVal::Fixed(_) => range.1 = Some(color),
             ColorVal::Base(_) => range.2 = Some(color),
         }
 
