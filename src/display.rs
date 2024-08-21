@@ -37,33 +37,73 @@ impl StyledString {
         }
     }
 
-    pub fn with_foreground<C: Into<Color>>(mut self, color: C) -> Self {
+    pub fn with_fg<C: Into<Color>>(mut self, color: C) -> Self {
         self.style.foreground = color.into();
         self
     }
 
-    pub fn with_background<C: Into<Color>>(mut self, color: C) -> Self {
+    pub fn with_bg<C: Into<Color>>(mut self, color: C) -> Self {
         self.style.background = color.into();
         self
     }
 
-    pub fn with_property(mut self, prop: Property) -> Self {
-        self.style.add_property(prop);
+    pub fn with_prop(mut self, prop: Property) -> Self {
+        self.style.add_prop(prop);
         self
     }
 
-    pub fn with_properties<V: Into<Vec<Property>>>(mut self, props: V) -> Self {
+    pub fn with_props<V: Into<Vec<Property>>>(mut self, props: V) -> Self {
         for p in props.into() {
-            self.style.add_property(p);
+            self.style.add_prop(p);
         }
         self
     }
 
-    pub fn foreground<C: Into<Color>>(&mut self, color: C) {
+    pub fn fg<C: Into<Color>>(&mut self, color: C) {
         self.style.foreground = color.into();
     }
 
-    pub fn background<C: Into<Color>>(&mut self, color: C) {
+    pub fn bg<C: Into<Color>>(&mut self, color: C) {
         self.style.foreground = color.into();
+    }
+
+    pub fn dim(mut self) -> StyledString {
+        self.style.add_prop(Property::Dim);
+        self
+    }
+
+    pub fn bold(mut self) -> StyledString {
+        self.style.add_prop(Property::Bold);
+        self
+    }
+
+    pub fn italic(mut self) -> StyledString {
+        self.style.add_prop(Property::Italic);
+        self
+    }
+
+    pub fn underline(mut self) -> StyledString {
+        self.style.add_prop(Property::Underline);
+        self
+    }
+
+    pub fn strikethrough(mut self) -> StyledString {
+        self.style.add_prop(Property::Strikethrough);
+        self
+    }
+
+    pub fn hidden(mut self) -> StyledString {
+        self.style.add_prop(Property::Hidden);
+        self
+    }
+
+    pub fn inverse(mut self) -> StyledString {
+        self.style.add_prop(Property::Inverse);
+        self
+    }
+
+    pub fn blinking(mut self) -> StyledString {
+        self.style.add_prop(Property::Blinking);
+        self
     }
 }

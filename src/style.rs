@@ -8,7 +8,7 @@ use crate::color::Color;
 use super::ansi::ANSICode;
 use super::display::StyledString;
 
-pub trait Styleable<S> {
+pub trait Styleable {
     ///Converts to a new [StyledString]. Resets a styled strings style if called on
     ///one.
     fn to_styled_string(&self) -> StyledString;
@@ -17,7 +17,7 @@ pub trait Styleable<S> {
     fn with_style(&self, style: Style) -> StyledString;
 }
 
-impl<S: Display> Styleable<S> for S {
+impl<S: Display> Styleable for S {
     fn to_styled_string(&self) -> StyledString {
         return StyledString::new(self.to_string(), None);
     }
@@ -38,34 +38,38 @@ pub struct Style {
     pub prefix_with_reset: bool,
 }
 
-impl<'a> Style {
+impl Style {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
     ///Set the foreground
-    pub fn with_foreground<C: Into<Color>>(mut self, foreground: C) -> Self {
+    pub fn with_fg<C: Into<Color>>(mut self, foreground: C) -> Self {
         self.foreground = foreground.into();
         self
     }
 
     ///Set the background
-    pub fn with_background<C: Into<Color>>(mut self, background: C) -> Self {
+    pub fn with_bg<C: Into<Color>>(mut self, background: C) -> Self {
         self.background = background.into();
         self
     }
 
     ///Set a property
-    pub fn with_property(mut self, prop: Property) -> Self {
+    pub fn with_prop(mut self, prop: Property) -> Self {
         if !&self.properties.contains(&prop) {
             self.properties.push(prop);
         }
         self
     }
 
-    pub fn add_property(&mut self, prop: Property) {
+    pub fn add_prop(&mut self, prop: Property) {
         if !&self.properties.contains(&prop) {
             self.properties.push(prop);
         }
     }
 
-    pub fn remove_property(&mut self, prop: Property) {
+    pub fn remove_prop(&mut self, prop: Property) {
         self.properties = self
             .properties
             .iter()
@@ -74,22 +78,22 @@ impl<'a> Style {
             .collect()
     }
 
-    pub fn toggle_property(&mut self, prop: Property) {
+    pub fn toggle_prop(&mut self, prop: Property) {
         if self.properties.contains(&prop) {
-            self.remove_property(prop)
+            self.remove_prop(prop)
         } else {
-            self.add_property(prop)
+            self.add_prop(prop)
         }
     }
 
     ///Reset the style
-    pub fn reset_style(&mut self) {
+    pub fn reset(&mut self) {
         self.properties.clear();
         self.foreground = Color::default();
         self.background = Color::default();
     }
 
-    pub fn get_properties(&self) -> Cow<Vec<Property>> {
+    pub fn get_props(&self) -> Cow<Vec<Property>> {
         return Cow::Borrowed(&self.properties);
     }
 }

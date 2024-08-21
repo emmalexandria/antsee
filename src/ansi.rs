@@ -31,7 +31,7 @@ impl Style {
         Self::write_code(&self.foreground, writer, Some(false), &mut has_written)?;
         Self::write_code(&self.background, writer, Some(true), &mut has_written)?;
 
-        for prop in self.get_properties().iter() {
+        for prop in self.get_props().iter() {
             Self::write_code(prop, writer, None, &mut has_written)?;
         }
 

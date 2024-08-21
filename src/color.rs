@@ -93,24 +93,12 @@ pub struct Color {
     pub is_light_bg: Option<bool>,
 }
 
-impl From<ColorVal> for Color {
-    fn from(value: ColorVal) -> Self {
+impl<C: Into<ColorVal>> From<C> for Color {
+    fn from(value: C) -> Self {
         let mut ret_val = Self::default();
-        ret_val.color = ColorLevels::from(value);
+        ret_val.color = ColorLevels::from(value.into());
 
         ret_val
-    }
-}
-
-impl From<ANSI16> for Color {
-    fn from(value: ANSI16) -> Self {
-        Self::from(ColorVal::Base(value))
-    }
-}
-
-impl From<RGB> for Color {
-    fn from(value: RGB) -> Self {
-        Self::from(ColorVal::RGB(value))
     }
 }
 
@@ -161,7 +149,7 @@ impl Color {
         self
     }
 
-    pub fn with_background_light(mut self, light: Option<bool>) -> Self {
+    pub fn with_bg_light(mut self, light: Option<bool>) -> Self {
         self.is_light_bg = light;
         self
     }
