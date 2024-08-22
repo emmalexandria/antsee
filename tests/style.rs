@@ -16,3 +16,15 @@ fn test_style() {
 
     assert_eq!(output, "\x1b[31;40;1;4mHello\x1b[0m");
 }
+
+#[test]
+fn test_styled_string() {
+    let styled_str = "Hello World"
+        .to_styled()
+        .with_fg(ANSI16::Red)
+        .with_bg(ANSI16::Black)
+        .with_prop(Property::Bold)
+        .with_prop(Property::Underline);
+
+    assert_eq!(styled_str.to_string(), "\x1b[31;40;1;4mHello World\x1b[0m");
+}

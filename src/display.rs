@@ -8,7 +8,10 @@ use super::{
     style::{Style, Styleable},
 };
 
-use std::fmt::Display;
+use std::{
+    fmt::Display,
+    ops::{Add, AddAssign, Deref},
+};
 
 ///A string with an associated [Style]
 #[derive(Clone, Eq, PartialEq, PartialOrd, Hash, Debug)]
@@ -26,6 +29,22 @@ impl Display for StyledString {
 impl AsRef<str> for StyledString {
     fn as_ref(&self) -> &str {
         return &self.content;
+    }
+}
+
+impl Add<&str> for StyledString {
+    type Output = StyledString;
+    fn add(self, rhs: &str) -> Self::Output {
+        StyledString {
+            content: self.content + rhs,
+            ..self
+        }
+    }
+}
+
+impl AddAssign<&str> for StyledString {
+    fn add_assign(&mut self, rhs: &str) {
+        self.content += rhs
     }
 }
 

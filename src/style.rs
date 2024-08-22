@@ -11,14 +11,14 @@ use super::display::StyledString;
 pub trait Styleable {
     ///Converts to a new [StyledString]. Resets a styled strings style if called on
     ///one.
-    fn to_styled_string(&self) -> StyledString;
+    fn to_styled(&self) -> StyledString;
 
     ///Converts to a [StyledString] with an associated [Style]
     fn with_style(&self, style: Style) -> StyledString;
 }
 
 impl<S: Display> Styleable for S {
-    fn to_styled_string(&self) -> StyledString {
+    fn to_styled(&self) -> StyledString {
         return StyledString::new(self.to_string(), None);
     }
 
