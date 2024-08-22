@@ -350,10 +350,12 @@ mod color_tests {
     fn test_optimistic_colors() {
         let mut color = create_test_color().with_optimistic_colors(true);
 
+        //Should return RGB color
         assert!(color.get_codes(Some(false)).len() == 5);
 
         color.optimistic_colors = false;
 
+        //Should return ANSI16 color
         assert!(color.get_codes(Some(false)).len() == 1);
     }
 
@@ -370,5 +372,36 @@ mod color_tests {
         color.color_support = Some((true, false, false));
 
         assert!(color.get_codes(Some(false)).len() == 1);
+    }
+
+    #[test]
+    fn test_rgb_from_hex() {
+        let rgb_lime = RGB::hex("#a6fc35");
+        assert_eq!(rgb_lime.unwrap(), RGB::rgb(166, 252, 53));
+
+        let dark_blue = RGB::hex("#021e5b");
+        assert_eq!(dark_blue.unwrap(), RGB::rgb(2, 30, 91));
+    }
+
+    #[test]
+    fn test_rgb_codes() {
+        let val = ColorVal::RGB(RGB::rgb(166, 252, 53));
+
+        let fg_codes = val.get_codes(Some(false));
+        let bg_codes = val.get_codes(Some(true));
+
+        assert_eq!(fg_codes, vec![38, 2, 166, 252, 53]);
+        assert_eq!(bg_codes, vec![48, 2, 166, 252, 53]);
+    }
+
+    #[test]
+    fn test_fixed_codes() {
+        let val = ColorVal::Fixed(32);
+
+        let fg_codes = val.get_codes(Some(false));
+        let bg_codes = val.get_codes(Some(true));
+
+        assert_eq!(fg_codes, vec![38, 5, 32]);
+        assert_eq!(bg_codes, vec![48, 5, 32]);
     }
 }
