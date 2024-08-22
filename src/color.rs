@@ -199,6 +199,19 @@ impl Color {
             if levels.1.is_some() {
                 return levels.1.as_ref().unwrap().clone();
             }
+            if levels.0.is_some() {
+                return levels.0.as_ref().unwrap().clone();
+            }
+        } else {
+            if levels.0.is_some() {
+                return levels.0.as_ref().unwrap().clone();
+            }
+            if levels.1.is_some() {
+                return levels.1.as_ref().unwrap().clone();
+            }
+            if levels.2.is_some() {
+                return levels.2.as_ref().unwrap().clone();
+            }
         }
 
         return levels.0.unwrap_or_default().clone();
