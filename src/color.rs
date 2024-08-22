@@ -58,15 +58,15 @@ impl From<RGB> for ColorVal {
     }
 }
 
-///Holds [Color] representations for [ANSI16] (and optionally ANSI256 and [RGB])
+///Holds [Color] representations for [ANSI16], ANSI256 and [RGB]
 #[derive(Clone, Copy, Eq, PartialEq, PartialOrd, Hash, Debug, Default)]
-pub struct ColorLevels(ColorVal, Option<ColorVal>, Option<ColorVal>);
+pub struct ColorLevels(Option<ColorVal>, Option<ColorVal>, Option<ColorVal>);
 
 impl From<ColorVal> for ColorLevels {
     fn from(value: ColorVal) -> Self {
         let mut ret_val = Self::default();
         match value {
-            ColorVal::Base(_) => ret_val.0 = value,
+            ColorVal::Base(_) => ret_val.0 = Some(value),
             ColorVal::Fixed(_) => ret_val.1 = Some(value),
             ColorVal::RGB(_) => ret_val.2 = Some(value),
         }
@@ -105,7 +105,7 @@ impl<C: Into<ColorVal>> From<C> for Color {
 impl Color {
     pub fn new<C: Into<ColorVal>>(color: C) -> Self {
         Self {
-            color: ColorLevels(color.into(), None, None),
+            color: ColorLevels::from(color.into()),
             light_color: None,
             color_support: None,
             optimistic_colors: false,
@@ -122,7 +122,7 @@ impl Color {
         match color {
             ColorVal::RGB(_) => self.color.2 = Some(color),
             ColorVal::Fixed(_) => self.color.1 = Some(color),
-            ColorVal::Base(_) => self.color.0 = color,
+            ColorVal::Base(_) => self.color.0 = Some(color),
         }
         self
     }
@@ -130,7 +130,7 @@ impl Color {
     pub fn with_light_color(mut self, color: ColorVal) -> Self {
         let mut range = self.light_color.unwrap_or_default();
         match color {
-            ColorVal::RGB(_) => range.0 = color,
+            ColorVal::RGB(_) => range.0 = Some(color),
             ColorVal::Fixed(_) => range.1 = Some(color),
             ColorVal::Base(_) => range.2 = Some(color),
         }
@@ -188,7 +188,7 @@ impl Color {
             return color.1.as_ref().unwrap().get_codes(bg);
         }
 
-        return color.0.get_codes(bg);
+        return color.0.unwrap_or_default().get_codes(bg);
     }
 
     fn get_color_without_support_info(&self, levels: &ColorLevels) -> ColorVal {
@@ -201,7 +201,7 @@ impl Color {
             }
         }
 
-        return levels.0.clone();
+        return levels.0.unwrap_or_default().clone();
     }
 }
 
@@ -340,7 +340,7 @@ mod color_tests {
 
     fn create_test_color() -> Color {
         Color::new(ANSI16::Red).with_colors(ColorLevels(
-            ANSI16::Red.into(),
+            Some(ANSI16::Red.into()),
             Some(160.into()),
             Some(RGB::rgb(255, 0, 0).into()),
         ))

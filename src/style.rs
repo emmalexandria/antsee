@@ -14,7 +14,7 @@ pub trait Styleable {
     fn to_styled(&self) -> StyledString;
 
     ///Converts to a [StyledString] with an associated [Style]
-    fn with_style(&self, style: Style) -> StyledString;
+    fn with_style(&self, style: &Style) -> StyledString;
 }
 
 impl<S: Display> Styleable for S {
@@ -22,8 +22,8 @@ impl<S: Display> Styleable for S {
         return StyledString::new(self.to_string(), None);
     }
 
-    fn with_style(&self, style: Style) -> StyledString {
-        return StyledString::new(self.to_string(), Some(style));
+    fn with_style(&self, style: &Style) -> StyledString {
+        return StyledString::new(self.to_string(), Some(style.clone()));
     }
 }
 
