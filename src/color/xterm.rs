@@ -53,6 +53,14 @@ macro_rules! xterm_colors {
                     _ => None
                 }
             }
+
+            pub fn get_ansi256(ansi256: u8) -> Self {
+                match ansi256 {
+                    $(
+                        $color_number => Self::$variant_name,
+                    )*
+                }
+            }
         }
         // Add utility methods to the enum
     };

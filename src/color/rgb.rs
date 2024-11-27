@@ -5,17 +5,36 @@ use serde::{de::Visitor, ser::SerializeSeq, Deserialize, Serialize};
 
 use super::css::{self, CssColors};
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+/** The RGB colour type, containing a simple u8 array to represent the color value */
+#[derive(Debug, Clone, Copy, Default, PartialEq)]
 pub struct Rgb([u8; 3]);
 
+/** Defines potential errors when parsing an [Rgb] value from a string. Required by
+* the [FromStr] trait. */
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum RgbError {
+    ///Hex value is not 6 characters. This library currently does not support 3 character hex
+    ///values.
     HexWrongLength,
+    ///Hex value contains characters outside the 0-f range
     InvalidHexValue,
+    ///String doesn't match any method of parsing
     InvalidString,
 }
 
 impl Rgb {
+    ///Construct a new Rgb instance from an array of u8s
+    pub fn new(val: [u8; 3]) -> Rgb {
+        Rgb(val)
+    }
+
+    ///Set the RGB color with a hexadecimal color string
+    pub fn set_hex(&mut self, hex: &str) -> Result<(), RgbError> {
+        let new = Self::from_hex(hex)?;
+        self.0 = new.0;
+        Ok(())
+    }
+
     fn from_hex(hex: &str) -> Result<Self, RgbError> {
         let mut hex = hex;
         if hex.starts_with('#') {
