@@ -7,15 +7,7 @@ repository = "https://github.com/emmalexandria/antsee"
 readme = "README.md"
 version = "1.0.2"
 edition = "2021"
-keywords = [
-  "terminal",
-  "ansi",
-  "colors",
-  "configuration",
-  "ansi-term",
-  "color",
-  "terminal-text",
-]
+keywords = ["terminal", "ansi", "configuration", "color", "terminal-text"]
 
 [features]
 serde = ["dep:serde"]
