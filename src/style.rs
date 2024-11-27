@@ -1,5 +1,6 @@
 use crate::color::Color;
 
+#[derive(Default, Clone, Copy, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Style {
     pub fg: Option<Color>,
@@ -7,7 +8,27 @@ pub struct Style {
     pub attributes: Attributes,
 }
 
-#[derive(Default, Clone, Copy, PartialEq)]
+impl Style {
+    fn new(fg: Option<Color>, bg: Option<Color>, attributes: Option<Attributes>) -> Self {
+        Self {
+            fg,
+            bg,
+            attributes: attributes.unwrap_or_default(),
+        }
+    }
+
+    pub fn fg(mut self, fg: Color) -> Self {
+        self.fg = Some(fg);
+        self
+    }
+
+    pub fn bg(mut self, bg: Color) -> Self {
+        self.bg = Some(bg);
+        self
+    }
+}
+
+#[derive(Default, Clone, Copy, PartialEq, Debug)]
 #[cfg_attr(
     feature = "serde",
     derive(serde::Serialize, serde::Deserialize),
