@@ -1,9 +1,12 @@
 use std::str::FromStr;
 
+use super::ColorValue;
+
 #[repr(u8)]
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Default)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize))]
 pub enum Ansi16 {
+    #[default]
     Default = 0,
     Black = 1,
     Red = 2,
@@ -28,6 +31,8 @@ pub enum Ansi16Error {
     InvalidName,
     U8TooLarge,
 }
+
+impl ColorValue for Ansi16 {}
 
 impl From<Ansi16> for u8 {
     fn from(val: Ansi16) -> Self {

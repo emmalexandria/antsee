@@ -1,25 +1,44 @@
 use std::str::FromStr;
 
-use super::xterm::XtermColors;
+use super::{xterm::XtermColors, Color, ColorValue};
 
 ///Ansi256 color value represented by a u8. Can be created from [XtermColors] name with
 ///[FromStr].
 #[derive(Clone, Debug, Default, PartialEq, Copy)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct Ansi256(u8);
+pub struct Ansi256(pub u8);
 
 impl Ansi256 {
     /// Create a new Ansi256 from u8
-    pub fn new(val: u8) -> Self {
-        Self(val)
+    pub fn new() -> Self {
+        Self(0)
     }
+
+    ///Create a new Ansi256 from XtermColors
+    pub fn from(color: XtermColors) -> Self {
+        Self(color.ansi256())
+    }
+
     /// Set the u8 color code of the color
     pub fn set_code(&mut self, val: u8) {
         self.0 = val
     }
+
     /// Set the [XtermColors] of the color
     pub fn set_color(&mut self, color: XtermColors) {
         self.0 = color.ansi256()
+    }
+
+    ///Set the [XtermColors] of the color
+    pub fn color(mut self, color: XtermColors) -> Self {
+        self.set_color(color);
+        self
+    }
+
+    ///Set the u8 color code of the color
+    pub fn code(mut self, code: u8) -> Self {
+        self.set_code(code);
+        self
     }
 
     ///Get the [XtermColors] of the color
@@ -33,6 +52,8 @@ impl From<XtermColors> for Ansi256 {
         Self(value.ansi256())
     }
 }
+
+impl ColorValue for Ansi256 {}
 
 ///Possible errors when parsing Ansi256 from string. Required by [FromStr]
 pub enum Ansi256Error {

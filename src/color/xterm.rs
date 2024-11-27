@@ -4,15 +4,15 @@ macro_rules! xterm_colors {
             $($variant_name:ident, $xterm_name:expr, $color_number:expr, ($r:expr, $g:expr, $b:expr));* $(;)?
         }
     ) => {
-        // Define the enum
+        ///List of ANSI256 colors by name
         pub enum $enum_name {
             $(
                 $variant_name,
             )*
         }
 
-        // Implement the trait for the enum
         impl $enum_name {
+            ///Get all values of variant
             pub fn get_color(&'_ self) -> (&'_ str, u8, [u8;3]) {
                 match self {
                     $(
@@ -20,7 +20,7 @@ macro_rules! xterm_colors {
                     )*
                 }
             }
-
+            ///Get rgb value of variant
             pub fn rgb(&self) -> [u8;3] {
                 match self {
                     $(
@@ -28,7 +28,7 @@ macro_rules! xterm_colors {
                     )*
                 }
             }
-
+            ///Get ansi256 code of variant
             pub fn ansi256(&self) -> u8 {
                 match self {
                     $(
@@ -36,7 +36,7 @@ macro_rules! xterm_colors {
                     )*
                 }
             }
-
+            ///Get xterm name of variant
             pub fn xterm_name(&self) -> &'static str {
                 match self {
                     $(
@@ -44,7 +44,7 @@ macro_rules! xterm_colors {
                     )*
                 }
             }
-
+            ///Get variant by Xterm name
             pub fn get_name(name: &str) -> Option<Self> {
                 match name {
                     $(
@@ -53,7 +53,7 @@ macro_rules! xterm_colors {
                     _ => None
                 }
             }
-
+            ///Get variant by ansi256 code
             pub fn get_ansi256(ansi256: u8) -> Self {
                 match ansi256 {
                     $(

@@ -25,6 +25,31 @@ pub enum Color {
     ///[Rgb] variant
     Rgb(Rgb),
 }
+impl Color {
+    ///Retrieve the inner [Ansi16] value if the color has one
+    pub fn as_ansi(&self) -> Option<&Ansi16> {
+        if let Color::Ansi(value) = self {
+            return Some(value);
+        }
+        None
+    }
+
+    ///Retrieve the inner [Ansi256] value if the color has one
+    pub fn as_ansi256(&self) -> Option<&Ansi256> {
+        if let Color::Ansi256(value) = self {
+            return Some(value);
+        }
+        None
+    }
+
+    ///Retrieve the inner [Rgb] value if the color has one
+    pub fn as_rgb(&self) -> Option<&Rgb> {
+        if let Color::Rgb(value) = self {
+            return Some(value);
+        }
+        None
+    }
+}
 
 impl From<Ansi16> for Color {
     fn from(value: Ansi16) -> Self {
@@ -43,3 +68,6 @@ impl From<Rgb> for Color {
         Self::Rgb(value)
     }
 }
+
+///Trait for easily making generics that take Ansi16, Ansi256, or Rgb
+pub trait ColorValue: Into<Color> + Default {}
