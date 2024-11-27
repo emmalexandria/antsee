@@ -1,13 +1,21 @@
 [package]
 name = "antsee"
 authors = ["Emma Alexandria"]
-description = "A simple, dependency free, and versatile crate for terminal colors and properties"
+description = "A terminal color and style library designed not for output but for creating configuration files"
 license = "MIT"
 repository = "https://github.com/emmalexandria/antsee"
 readme = "README.md"
-version = "1.0.1"
+version = "1.0.2"
 edition = "2021"
-keywords = ["terminal", "ansi", "colors"]
+keywords = [
+  "terminal",
+  "ansi",
+  "colors",
+  "configuration",
+  "ansi-term",
+  "color",
+  "terminal-text",
+]
 
 [features]
 serde = ["dep:serde"]
