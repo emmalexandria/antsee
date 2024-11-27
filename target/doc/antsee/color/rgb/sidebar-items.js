@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["RgbError"],"struct":["Rgb"]};

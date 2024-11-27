@@ -1,1 +1,7 @@
-./doc-watch.fish
+target/
+debug/
+
+Cargo.lock
+
+*.pdb
+**/*.rs.bk

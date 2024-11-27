@@ -1,3 +1,0 @@
-var srcIndex = new Map(JSON.parse('[["antsee",["",[["color",[],["ansi16.rs","ansi256.rs","css.rs","rgb.rs","xterm.rs"]]],["color.rs","lib.rs","style.rs"]]],["antsee",["",[["color",[],["ansi16.rs","ansi256.rs","css.rs","rgb.rs"]]],["color.rs","lib.rs","style.rs"]]],["antsee",["",[["color",[],["ansi16.rs","ansi256.rs","css.rs","rgb.rs"]]],["color.rs","lib.rs"]]]]'));
-createSrcSidebar();
-//{"start":36,"fragment_lengths":[119,109,98]}
