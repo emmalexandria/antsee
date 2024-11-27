@@ -29,18 +29,16 @@ pub enum Ansi16Error {
     U8TooLarge,
 }
 
-impl Into<u8> for Ansi16 {
-    fn into(self) -> u8 {
-        self as u8
+impl From<Ansi16> for u8 {
+    fn from(val: Ansi16) -> Self {
+        val as u8
     }
 }
 
 impl TryFrom<u8> for Ansi16 {
     type Error = Ansi16Error;
     fn try_from(value: u8) -> Result<Ansi16, Self::Error> {
-        match value {
-            _ => Err(Ansi16Error::U8TooLarge),
-        }
+        Err(Ansi16Error::U8TooLarge)
     }
 }
 

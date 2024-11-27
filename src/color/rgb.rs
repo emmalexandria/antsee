@@ -3,7 +3,7 @@ use std::str::FromStr;
 #[cfg(feature = "serde")]
 use serde::{de::Visitor, ser::SerializeSeq, Deserialize, Serialize};
 
-use super::css::{self, CssColors};
+use super::css::{CssColors};
 
 /** The RGB colour type, containing a simple u8 array to represent the color value */
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
