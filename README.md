@@ -13,21 +13,30 @@ additional colours. `antsee` aims to stay small, having no default dependencies.
 
 ## Features
 
-### User friendly options for setting colours
-RGB colours can be set with a list of three u8 values, a hex string, a CSS colour name, or from a set of names for the ANSI256 palette (which can also be used for ANSI256 of course).
+### Extensive colour libraries 
+`antsee` provides full libraries of CSS and xterm colours which can be used to set the values of RGB or Fixed (ANSI256) colours. These libraries 
+contain the colour names, and RGB values. In addition, RGB colours can be set with hex values, and ANSI16 colours can be set with string names such as 
+BrightGreen or brightgreen. 
 
-ANSI16 colours can be set by both PascalCase, such as `DarkLight`, or lowercase such as `darklight`. Colour deserialization will first attempt to create an 
-RGB colour, then an ANSI256 colour, and then finally an ANSI16 colour. 
+### Custom Serde magic 
+Every colour type in `antsee` has custom Serialize and Deserialize definitions. This allows for two main connected features:
+1. CSS/xterm color names and hex values will be deserialized
+2. Every color type in `antsee` keeps track of the last value used to set it. It will then serialize with this value instead of a strict data representation.
+
+#### Example
+If I deserialize an RGB colour from a hex value, the RGB colour will store that hex value alongside its data representation. If I were to reserialize the RGB colour, it would serialize to the hex value. However, if I then set the RGB colour to `css(red)`, it will then serialize to `css(red)` automatically. 
+
+*If you want to serialize raw data values, either set the colour with those raw data values or import the `ColorSource` trait and call `source_internal` on the color variable*
 
 ### Easy custom style types 
 If your configuration needs go beyond `fg`, `bg`, and `attributes`, text attributes and color have been kept seperate from the `Style` type. This makes it easy to define custom style types with the same benefits as the built in one.
 
+## Examples
+The best place to see `antsee` at work is in the `/examples` directory.
+
 ## Roadmap
 
-### Conversion libraries for common ANSI libraries
-I plan to create crates which allow for easy conversion between `antsee`'s types and those of popular terminal output libraries like `crossterm`, `owo-colors`, `colorize`, and `ansi_term`. 
-
-### Generic macros and traits for defining new color names
-Currently, the `xterm` and `css` color names are created by specialised macros and loaded specially in each colour class. I plan to eventually create a generic 
-macro alongside traits for defining new sets of colour variables.
+- Unify implementation of xterm and CSS colour libraries
+- Create conversion libraries for popular ANSI output libraries
+- Introduce the ability to set attributes with a shorthand (e.g.) bsu would set bold, strikethrough, and hidden
 

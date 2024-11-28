@@ -73,7 +73,7 @@ impl From<Rgb> for Color {
 ///Trait for easily making generics that take Ansi16, Ansi256, or Rgb
 pub trait ColorValue: Into<Color> + Default {}
 
-trait ColorSource {
+pub trait ColorSource {
     type ExternalSource: ?Sized;
 
     fn set_external_source(&mut self, value: Self::ExternalSource);
