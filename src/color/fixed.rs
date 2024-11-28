@@ -1,8 +1,6 @@
 use std::rc::Rc;
 use std::{borrow::Cow, str::FromStr};
 
-use serde::Serialize;
-
 use super::xterm::{self, wrap_name};
 use super::{xterm::XtermColors, Color, ColorSource, ColorValue, Source};
 
