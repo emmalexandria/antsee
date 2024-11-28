@@ -1,6 +1,6 @@
 use crate::color::{Color, ColorValue};
 
-#[derive(Default, Clone, Copy, Debug)]
+#[derive(Default, Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 ///Basic style struct holding text color and attributes
 pub struct Style {

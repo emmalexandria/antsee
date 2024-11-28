@@ -1,13 +1,16 @@
-use std::str::FromStr;
+use std::{rc::Rc, str::FromStr};
 
 #[cfg(feature = "serde")]
 use serde::{de::Visitor, ser::SerializeSeq, Deserialize, Serialize};
 
-use super::{css::CssColors, ColorValue};
+use super::{
+    css::{self, CssColors},
+    ColorValue, Source,
+};
 
 /** The RGB colour type, containing a simple u8 array to represent the color value */
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
-pub struct Rgb([u8; 3]);
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct Rgb([u8; 3], Source<Rc<str>>);
 
 /** Defines potential errors when parsing an [Rgb] value from a string. Required by
 * the [FromStr] trait. */
@@ -25,17 +28,19 @@ pub enum RgbError {
 impl Rgb {
     ///Construct a new Rgb instance from an array of u8s
     pub fn new(val: [u8; 3]) -> Rgb {
-        Rgb(val)
+        Rgb(val, Source::Inactive(Rc::from("")))
     }
 
     ///Set the RGB color with a hexadecimal color string
     pub fn set_hex(&mut self, hex: &str) -> Result<(), RgbError> {
         let new = Self::from_hex(hex)?;
         self.0 = new.0;
+        self.1 = Source::Active(Rc::from(hex));
         Ok(())
     }
 
     fn from_hex(hex: &str) -> Result<Self, RgbError> {
+        let fullhex = hex;
         let mut hex = hex;
         if hex.starts_with('#') {
             hex = &hex[1..]
@@ -47,13 +52,13 @@ impl Rgb {
         let g = u8::from_str_radix(&hex[2..4], 16).map_err(|_| RgbError::InvalidHexValue)?;
         let b = u8::from_str_radix(&hex[4..6], 16).map_err(|_| RgbError::InvalidHexValue)?;
 
-        Ok(Self([r, g, b]))
+        Ok(Self([r, g, b], Source::Active(Rc::from(fullhex))))
     }
 }
 
 impl From<CssColors> for Rgb {
     fn from(value: CssColors) -> Self {
-        Rgb(value.rgb())
+        Rgb(value.rgb(), Source::Active(Rc::from(value.css_name())))
     }
 }
 
@@ -66,7 +71,7 @@ impl FromStr for Rgb {
             return Self::from_hex(s);
         }
         if s.starts_with("css(") && s.ends_with(')') {
-            let color_name = &s[4..s.len() - 1];
+            let color_name = css::unwrap_name(s);
             let css_color = CssColors::get_name(color_name);
             if let Some(color) = css_color {
                 return Ok(Self::from(color));
@@ -82,6 +87,12 @@ impl Serialize for Rgb {
     where
         S: serde::Serializer,
     {
+        if let Source::Active(s) = self.1.clone() {
+            if let Some(c) = CssColors::get_name(&s) {
+                return serializer.serialize_str(&css::wrap_name(&s));
+            }
+            return serializer.serialize_str(&s);
+        }
         let mut seq = serializer.serialize_seq(Some(3))?;
         seq.serialize_element(&self.0[0])?;
         seq.serialize_element(&self.0[1])?;
@@ -111,22 +122,11 @@ impl<'de> Visitor<'de> for RgbVisitor {
         Err(E::custom(format!("No string match found")))
     }
 
-    fn visit_string<E>(self, v: String) -> Result<Self::Value, E>
-    where
-        E: serde::de::Error,
-    {
-        let rgb = Rgb::from_str(&v);
-        if let Ok(color) = rgb {
-            return Ok(color);
-        }
-        Err(E::custom(format!("No string match found")))
-    }
-
     fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
     where
         A: serde::de::SeqAccess<'de>,
     {
-        let mut rgb = Rgb([0, 0, 0]);
+        let mut rgb = Rgb([0, 0, 0], Source::Inactive(Rc::from("")));
         let r = seq.next_element()?;
         if let Some(red) = r {
             rgb.0[0] = red;
@@ -155,20 +155,31 @@ impl<'de> Deserialize<'de> for Rgb {
 
 #[cfg(test)]
 mod rgb_tests {
+    use serde_test::{assert_tokens, Token};
+
     use super::*;
 
     #[test]
     fn test_rgb_from_hex() {
         let rgb = Rgb::from_str("#324582");
         assert!(rgb.is_ok());
-        assert_eq!(rgb.unwrap(), Rgb([50, 69, 130]));
+        assert_eq!(
+            rgb.unwrap(),
+            Rgb([50, 69, 130], Source::Active(Rc::from("#324582")))
+        );
     }
 
     #[test]
     fn test_rgb_from_css() {
         let rgb = Rgb::from_str("css(red)");
         assert!(rgb.is_ok());
-        assert_eq!(rgb.unwrap(), Rgb(CssColors::Red.rgb()));
+        assert_eq!(
+            rgb.unwrap(),
+            Rgb(
+                CssColors::Red.rgb(),
+                Source::Active(Rc::from(CssColors::Red.css_name()))
+            )
+        );
     }
 
     #[test]
@@ -179,5 +190,34 @@ mod rgb_tests {
         assert!(rgb.is_err_and(|e| e == RgbError::InvalidHexValue));
         let rgb = Rgb::from_str("css(fakeasscolor)");
         assert!(rgb.is_err_and(|e| e == RgbError::InvalidString));
+    }
+
+    #[test]
+    fn test_serialize_array() {
+        let rgb = Rgb::new([32, 45, 0]);
+
+        assert_tokens(
+            &rgb,
+            &[
+                Token::Seq { len: Some(3) },
+                Token::U8(32),
+                Token::U8(45),
+                Token::U8(0),
+                Token::SeqEnd,
+            ],
+        )
+    }
+
+    #[test]
+    fn test_serialize_hex() {
+        let rgb = Rgb::from_str("#453209").unwrap();
+
+        assert_tokens(&rgb, &[Token::Str("#453209")])
+    }
+
+    #[test]
+    fn test_serialize_css() {
+        let rgb = Rgb::from_str("css(red)").unwrap();
+        assert_tokens(&rgb, &[Token::Str("css(red)")])
     }
 }

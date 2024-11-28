@@ -11,10 +11,4 @@ struct Config {
     quote: MultiColorStyle,
 }
 
-fn main() {
-    let config = Config {
-        quote: {
-            foreground: vec![Color::Rgb(Rgb::from_str("blue"))]
-        }
-    }
-}
+fn main() {}

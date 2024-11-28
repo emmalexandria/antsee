@@ -1,7 +1,7 @@
-/** ansi16 provides a representation of the basic ANSI colors as an enum*/
-pub mod ansi16;
-/** ansi256 provides a representation of the ANSI256 palette, including parsing from [XtermColors] */
-pub mod ansi256;
+/** ansi provides a representation of the basic ANSI colors as an enum*/
+pub mod ansi;
+/** fixed provides a representation of the ANSI256 palette, including parsing from [XtermColors] */
+pub mod fixed;
 /** rgb provides a representation of RGB colors, including parsing from [CssColors], [XtermColors],
 * and hexadecimals */
 pub mod rgb;
@@ -11,32 +11,33 @@ pub mod css;
 /** This module provides color names for the ANSI256 color palette to be used by RGB and ANSI256
 * colors */
 pub mod xterm;
+pub use {ansi::Ansi, fixed::Fixed};
 ///Represents a single color in [ANSI16], ANSI256, or [RGB]
-pub use {ansi16::Ansi16, ansi256::Ansi256, css::CssColors, rgb::Rgb, xterm::XtermColors};
+pub use {css::CssColors, rgb::Rgb, xterm::XtermColors};
 
 ///Enum representing a generic color of any format.
-#[derive(Clone, Copy, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub enum Color {
     ///[Ansi16] variant
-    Ansi(Ansi16),
+    Ansi(Ansi),
     ///[Ansi256] variant
-    Ansi256(Ansi256),
+    Fixed(Fixed),
     ///[Rgb] variant
     Rgb(Rgb),
 }
 impl Color {
-    ///Retrieve the inner [Ansi16] value if the color has one
-    pub fn as_ansi(&self) -> Option<&Ansi16> {
+    ///Retrieve the inner [Ansi] value if the color has one
+    pub fn as_ansi(&self) -> Option<&Ansi> {
         if let Color::Ansi(value) = self {
             return Some(value);
         }
         None
     }
 
-    ///Retrieve the inner [Ansi256] value if the color has one
-    pub fn as_ansi256(&self) -> Option<&Ansi256> {
-        if let Color::Ansi256(value) = self {
+    ///Retrieve the inner [Fixed] value if the color has one
+    pub fn as_fixed(&self) -> Option<&Fixed> {
+        if let Color::Fixed(value) = self {
             return Some(value);
         }
         None
@@ -51,15 +52,15 @@ impl Color {
     }
 }
 
-impl From<Ansi16> for Color {
-    fn from(value: Ansi16) -> Self {
+impl From<Ansi> for Color {
+    fn from(value: Ansi) -> Self {
         Self::Ansi(value)
     }
 }
 
-impl From<Ansi256> for Color {
-    fn from(value: Ansi256) -> Self {
-        Self::Ansi256(value)
+impl From<Fixed> for Color {
+    fn from(value: Fixed) -> Self {
+        Self::Fixed(value)
     }
 }
 
@@ -71,3 +72,42 @@ impl From<Rgb> for Color {
 
 ///Trait for easily making generics that take Ansi16, Ansi256, or Rgb
 pub trait ColorValue: Into<Color> + Default {}
+
+trait ColorSource {
+    type ExternalSource: ?Sized;
+
+    fn set_external_source(&mut self, value: Self::ExternalSource);
+    fn source_external(&mut self);
+    fn source_internal(&mut self);
+}
+
+#[derive(Clone, Copy, PartialEq, Debug)]
+enum Source<S> {
+    Active(S),
+    Inactive(S),
+}
+
+impl<S> Source<S> {
+    fn inactive(self) -> Self {
+        match self {
+            Self::Inactive(s) => Self::Inactive(s),
+            Self::Active(s) => Self::Inactive(s),
+        }
+    }
+
+    fn active(self) -> Self {
+        match self {
+            Source::Active(s) => Self::Active(s),
+            Source::Inactive(s) => Self::Active(s),
+        }
+    }
+}
+
+impl<S> Default for Source<S>
+where
+    S: Default,
+{
+    fn default() -> Self {
+        return Self::Inactive(S::default());
+    }
+}

@@ -17,4 +17,5 @@ serde = { version = "1.0.215", features = ["derive"], optional = true }
 
 [dev-dependencies]
 nu-ansi-term = "0.50.1"
+serde_test = "1.0.177"
 toml = "0.8.19"

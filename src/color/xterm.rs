@@ -66,6 +66,18 @@ macro_rules! xterm_colors {
     };
 }
 
+pub fn wrap_name(str: &str) -> String {
+    let wrapped_str = format!("xterm({})", str);
+    return wrapped_str;
+}
+
+pub fn unwrap_name(str: &str) -> &str {
+    if str.len() < "xterm()".len() {
+        return str;
+    }
+    return &str[6..str.len() - 1];
+}
+
 xterm_colors! {
     XtermColors {
         Black ,  "Black" ,  0 ,  (0 , 0 , 0);

@@ -50,6 +50,18 @@ macro_rules! css_colors {
     };
 }
 
+pub fn wrap_name(str: &str) -> String {
+    let wrapped_str = format!("css({})", str);
+    return wrapped_str;
+}
+
+pub fn unwrap_name(str: &str) -> &str {
+    if str.len() < "css()".len() {
+        return str;
+    }
+    return &str[4..str.len() - 1];
+}
+
 css_colors! {
     CssColors {
         AliceBlue, "aliceblue", (240, 248, 255);

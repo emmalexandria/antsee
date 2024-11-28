@@ -10,6 +10,9 @@ pub mod color;
 /** style holds the [Style] type and the [Attributes] type. */
 pub mod style;
 
+#[doc(inline)]
 pub use color::Color;
-pub use color::{Ansi16, Ansi256, Rgb};
+#[doc(inline)]
+pub use color::{Ansi, Fixed, Rgb};
+#[doc(inline)]
 pub use style::{Attributes, Style};

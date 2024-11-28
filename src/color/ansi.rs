@@ -5,7 +5,7 @@ use super::ColorValue;
 #[repr(u8)]
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Default)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize))]
-pub enum Ansi16 {
+pub enum Ansi {
     #[default]
     Default = 0,
     Black = 1,
@@ -27,28 +27,28 @@ pub enum Ansi16 {
 }
 
 #[derive(Debug, PartialEq)]
-pub enum Ansi16Error {
+pub enum AnsiError {
     InvalidName,
     U8TooLarge,
 }
 
-impl ColorValue for Ansi16 {}
+impl ColorValue for Ansi {}
 
-impl From<Ansi16> for u8 {
-    fn from(val: Ansi16) -> Self {
+impl From<Ansi> for u8 {
+    fn from(val: Ansi) -> Self {
         val as u8
     }
 }
 
-impl TryFrom<u8> for Ansi16 {
-    type Error = Ansi16Error;
-    fn try_from(value: u8) -> Result<Ansi16, Self::Error> {
-        Err(Ansi16Error::U8TooLarge)
+impl TryFrom<u8> for Ansi {
+    type Error = AnsiError;
+    fn try_from(value: u8) -> Result<Ansi, Self::Error> {
+        Err(AnsiError::U8TooLarge)
     }
 }
 
-impl FromStr for Ansi16 {
-    type Err = Ansi16Error;
+impl FromStr for Ansi {
+    type Err = AnsiError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let variants = [
@@ -75,7 +75,7 @@ impl FromStr for Ansi16 {
             }
         }
 
-        Err(Ansi16Error::InvalidName)
+        Err(AnsiError::InvalidName)
     }
 }
 
@@ -86,7 +86,7 @@ fn generate_name_variants<S: ToString>(name: S) -> [String; 2] {
     [base, lowercase]
 }
 
-impl std::fmt::Display for Ansi16 {
+impl std::fmt::Display for Ansi {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         //Hacky display implementation using the auto derived debug
         write!(f, "{:?}", self)
@@ -94,11 +94,11 @@ impl std::fmt::Display for Ansi16 {
 }
 
 #[cfg(feature = "serde")]
-struct Ansi16Visitor;
+struct AnsiVisitor;
 
 #[cfg(feature = "serde")]
-impl<'de> serde::de::Visitor<'de> for Ansi16Visitor {
-    type Value = Ansi16;
+impl<'de> serde::de::Visitor<'de> for AnsiVisitor {
+    type Value = Ansi;
 
     fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
         return write!(formatter, "Expecting ANSI16 color name in PascalCase or lowercase (e.g. BrightMagenta or brightmagenta");
@@ -108,7 +108,7 @@ impl<'de> serde::de::Visitor<'de> for Ansi16Visitor {
     where
         E: serde::de::Error,
     {
-        let ansi16 = Ansi16::from_str(v);
+        let ansi16 = Ansi::from_str(v);
         if let Ok(color) = ansi16 {
             return Ok(color);
         }
@@ -119,7 +119,7 @@ impl<'de> serde::de::Visitor<'de> for Ansi16Visitor {
     where
         E: serde::de::Error,
     {
-        let ansi16 = Ansi16::from_str(&v);
+        let ansi16 = Ansi::from_str(&v);
         if let Ok(color) = ansi16 {
             return Ok(color);
         }
@@ -128,12 +128,12 @@ impl<'de> serde::de::Visitor<'de> for Ansi16Visitor {
 }
 
 #[cfg(feature = "serde")]
-impl<'de> serde::Deserialize<'de> for Ansi16 {
+impl<'de> serde::Deserialize<'de> for Ansi {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
     {
-        deserializer.deserialize_string(Ansi16Visitor)
+        deserializer.deserialize_string(AnsiVisitor)
     }
 }
 
@@ -142,11 +142,8 @@ mod ansi_tests {
     use super::*;
 
     #[test]
-    fn test_ansi16_from_str() {
-        assert_eq!(Ansi16::from_str("brightblack"), Ok(Ansi16::BrightBlack));
-        assert_eq!(
-            Ansi16::from_str("bright black"),
-            Err(Ansi16Error::InvalidName)
-        );
+    fn test_ansi_from_str() {
+        assert_eq!(Ansi::from_str("brightblack"), Ok(Ansi::BrightBlack));
+        assert_eq!(Ansi::from_str("bright black"), Err(AnsiError::InvalidName));
     }
 }

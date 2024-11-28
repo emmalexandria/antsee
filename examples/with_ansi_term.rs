@@ -1,4 +1,4 @@
-use antsee::{color::XtermColors, style::Style, Ansi256, Attributes, Color};
+use antsee::{color::XtermColors, style::Style, Attributes, Color, Fixed};
 use std::str::FromStr;
 
 struct Config {
@@ -9,7 +9,7 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             output_style: Style::default()
-                .bg(Ansi256::from(XtermColors::Seafoam))
+                .bg(Fixed::from(XtermColors::Seafoam))
                 .attributes(Attributes::new().bold()),
         }
     }
@@ -21,7 +21,7 @@ fn main() {
         .output_style
         .bg
         .unwrap()
-        .as_ansi256()
+        .as_fixed()
         .unwrap()
         .to_owned();
     let ansi_term_style = nu_ansi_term::Style::new()
