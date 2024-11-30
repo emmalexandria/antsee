@@ -1,5 +1,6 @@
 use std::fmt::Display;
 
+///Attribute represents a boolean text attribute
 #[derive(Default, Clone, Copy, PartialEq, Debug)]
 pub struct Attribute(pub bool);
 
@@ -61,7 +62,7 @@ impl<'de> serde::Deserialize<'de> for Attribute {
 
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[derive(Debug, Clone, PartialEq, Default)]
-///Text attributes. Control how text is rendered besides color
+///Stores text attributes like bold, strikethrough, etc.
 pub struct Attributes {
     ///Whether text is bold
     pub bold: Attribute,

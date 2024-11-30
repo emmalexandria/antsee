@@ -2,21 +2,15 @@
 # Color sources
 [Rgb] and [Fixed] both store a string value called the 'external source'. This value is set whenever these color formats are constructed from a color name or hex value. This is what allows for the serialisation system.
 
-This is mediated by the trait [ColorSource](color::ColorSource). To disable
-the external source and serialise to the data value of the color, simply:
-```rust
-let color: Color = Rgb::from_str("#432312").unwrap();
-color.source_internal() // color will now serialize from the interal [u8;3] representation
-```
 */
 
 /** ansi provides a representation of the basic ANSI colors as an enum*/
-pub mod ansi;
+mod ansi;
 /** fixed provides a representation of the ANSI256 palette, including parsing from [XtermColors] */
-pub mod fixed;
+mod fixed;
 /** rgb provides a representation of RGB colors, including parsing from [CssColors], [XtermColors],
 * and hexadecimals */
-pub mod rgb;
+mod rgb;
 
 ///libraries is the module containing the CSS and Xterm color libraries
 pub mod libraries;
@@ -25,10 +19,14 @@ use std::fmt::Display;
 #[doc(inline)]
 pub use {ansi::Ansi, fixed::Fixed, rgb::Rgb};
 
+///This enum defines various errors that may be encountered when parsing a colour from a string
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ColorFromStrError {
+    ///Value is not a valid name in the colour library
     InvalidName,
+    ///Colour value is invalid (e.g. invalid Hex)
     InvalidValue,
+    ///String value could not be matched to any color source
     InvalidString,
 }
 
@@ -106,15 +104,15 @@ impl Display for Color {
     }
 }
 
-///Trait for easily making generics that take Ansi16, Ansi256, or Rgb
+///Trait allowing color formats to be turned into [Color] automatically
 pub trait ColorValue: Into<Color> + Default {}
 
-///Trait which enables management of "sources", which are what get serialized when the data
-///representation isnt
+///Trait which enables management of "color sources" -- the value which gets
+///serialised with the color
 pub trait ColorSource {
     type ExternalSource;
 
-    ///Set an external source on the colour
+    ///Set an external source on the color
     fn set_external_source(&mut self, value: Self::ExternalSource);
     ///Use the external source for serialization
     fn source_external(&mut self);

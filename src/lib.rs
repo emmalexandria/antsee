@@ -25,8 +25,9 @@ This crate provides two color libraries. [CssColors] provides CSS color names an
 
 When being parsed from a string or used in a configuration file, they are identified by a 'function' style syntax.
 ```rust
-let css_color = Rgb::from_str("css(red)").unwrap()
-let xterm_color = Fixed::from_str("xterm(Seafoam)").unwrap()
+use std::str::FromStr;
+let css_color = antsee::Rgb::from_str("css(red)").unwrap();
+let xterm_color = antsee::Fixed::from_str("xterm(Seafoam)").unwrap();
 ```
 
 ## Serde
@@ -38,10 +39,9 @@ provide the following functionality:
 
 
 ```rust
-use antsee::color::{Color, Rgb};
-
+use antsee::{Color, Rgb};
     //This will serialise as #324450 instead of the value of Rgb
-let color: Color = Rgb::from_hex("#324450").unwrap();
+let color: Color = Rgb::new().hex("#324450").unwrap().into();
 ```
 
 
@@ -57,4 +57,4 @@ pub mod style;
 
 pub use color::libraries::{CssColors, XtermColors};
 pub use color::{Ansi, Color, Fixed, Rgb};
-pub use style::{attributes::Attributes, Style};
+pub use style::{Attributes, Style};

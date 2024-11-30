@@ -1,14 +1,20 @@
+/*!
+
+
+*/
+
 use std::{borrow::Cow, fmt::Display, rc::Rc};
 
-pub mod attributes;
+mod attributes;
 
-use attributes::Attributes;
+pub use attributes::Attribute;
+pub use attributes::Attributes;
 
 use crate::color::{Color, ColorValue};
 
 #[derive(Default, Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-///Basic style struct holding text color and attributes
+///Defines a text style consisting of a foreground [Color], background [Color], and [Attributes]
 pub struct Style {
     ///Text foreground color. Default if set to [None]
     pub fg: Option<Color>,

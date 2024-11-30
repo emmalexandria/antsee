@@ -50,7 +50,7 @@ impl FromStr for Ansi {
             Self::BrightWhite,
         ];
         for v in variants {
-            if generate_name_variants(v).contains(&s.to_owned()) {
+            if s == v.to_string() {
                 return Ok(v);
             }
         }
@@ -59,16 +59,9 @@ impl FromStr for Ansi {
     }
 }
 
-fn generate_name_variants<S: ToString>(name: S) -> [String; 2] {
-    let base = name.to_string();
-    let lowercase = base.to_lowercase();
-
-    [base, lowercase]
-}
-
 impl std::fmt::Display for Ansi {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        //Hacky display implementation using the auto derived debug
+        //Hacky displayk implementation using the auto derived debug
         write!(f, "{:?}", self)
     }
 }
@@ -98,17 +91,6 @@ impl<'de> serde::Deserialize<'de> for Ansi {
                 }
                 Err(E::custom("Invalid color name"))
             }
-
-            fn visit_string<E>(self, v: String) -> Result<Self::Value, E>
-            where
-                E: serde::de::Error,
-            {
-                let ansi16 = Ansi::from_str(&v);
-                if let Ok(color) = ansi16 {
-                    return Ok(color);
-                }
-                Err(E::custom("Invalid color name"))
-            }
         }
         deserializer.deserialize_string(AnsiVisitor)
     }
@@ -121,5 +103,19 @@ impl serde::Serialize for Ansi {
         S: serde::Serializer,
     {
         serializer.serialize_str(&self.to_string())
+    }
+}
+
+#[cfg(test)]
+mod ansi_tests {
+    use serde_test::{assert_tokens, Token};
+
+    use super::*;
+
+    #[test]
+    fn test_serialisation_basic() {
+        let color = Ansi::BrightRed;
+
+        assert_tokens(&color, &[Token::Str("BrightRed")]);
     }
 }
