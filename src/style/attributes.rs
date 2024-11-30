@@ -54,7 +54,7 @@ impl<'de> serde::Deserialize<'de> for Attribute {
             where
                 E: serde::de::Error,
             {
-                return Ok(Attribute(v));
+                Ok(Attribute(v))
             }
         }
         deserializer.deserialize_bool(AttributeVisitor)

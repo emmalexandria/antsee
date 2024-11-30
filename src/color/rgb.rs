@@ -110,10 +110,10 @@ impl Serialize for Rgb {
         S: serde::Serializer,
     {
         if let Source::Active(s) = self.1.clone() {
-            if let Some(c) = CssColors::get_name(&s) {
+            if CssColors::get_name(&s).is_some() {
                 return serializer.serialize_str(&CssColors::wrap_name(&s));
             }
-            if let Some(c) = XtermColors::get_name(&s) {
+            if XtermColors::get_name(&s).is_some() {
                 return serializer.serialize_str(&XtermColors::wrap_name(&s));
             }
             return serializer.serialize_str(&s);
@@ -161,7 +161,7 @@ impl<'de> Visitor<'de> for RgbVisitor {
         if let Ok(color) = rgb {
             return Ok(color);
         }
-        Err(E::custom(format!("No string match found")))
+        Err(E::custom("No string match found".to_string()))
     }
 
     fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>

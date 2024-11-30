@@ -16,8 +16,8 @@ The primary types of this crate are [Color] and [Style].
 ## Colors
 
 Color formats in this crate can be parsed from strings, or set from color libraries. As an overview:
-- [Ansi] -- Can be parsed from a basic name string (`BrightRed` or `brightred`)
-- [Fixed] -- Can be parsed or set from [XtermColors] or set as a [u8]
+- [Ansi] -- Can be parsed from a basic name string (e.g. `BrightRed`)
+- [Fixed] -- Can be parsed or set from [XtermColors], or set as a [u8]
 - [Rgb] -- Can be parsed or set from [XtermColors] or [CssColors], parsed from a hex string, or set as an RGB value.
 
 ### Libraries

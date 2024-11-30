@@ -2,6 +2,7 @@ use std::str::FromStr;
 
 use super::{ColorFromStrError, ColorValue};
 
+///ANSI16 colour values
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Default)]
 pub enum Ansi {
     #[default]
@@ -98,7 +99,7 @@ impl<'de> serde::Deserialize<'de> for Ansi {
             type Value = Ansi;
 
             fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-                return write!(formatter, "Expecting ANSI16 color name in PascalCase");
+                write!(formatter, "Expecting ANSI16 color name in PascalCase")
             }
 
             fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
