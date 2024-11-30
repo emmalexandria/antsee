@@ -1,5 +1,4 @@
-use antsee::{Attributes, Color, Fixed, Style, XtermColors};
-use std::str::FromStr;
+use antsee::{Attributes, Fixed, Style, XtermColors};
 
 struct Config {
     output_style: Style,

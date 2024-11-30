@@ -5,7 +5,7 @@ use serde::{de::Visitor, ser::SerializeSeq, Deserialize, Serialize};
 
 use super::{
     libraries::{ColorLibrary, CssColors, XtermColors},
-    ColorFromStrError, ColorSource, ColorValue, Source,
+    ColorFromStrError, ColorValue, Source,
 };
 
 /** The RGB colour type, containing a simple u8 array to represent the color value */
