@@ -1,12 +1,10 @@
+use antsee::color::libraries::xterm::XtermColors;
 use bat::assets::HighlightingAssets;
 use bat::{Input, PrettyPrinter};
 use std::fmt::Display;
 use std::str::FromStr;
 
-use antsee::{
-    color::{CssColors, XtermColors},
-    Ansi, Attributes, Color, Fixed, Rgb, Style,
-};
+use antsee::{Ansi, Attributes, Color, Fixed, Rgb, Style};
 use serde::Serialize;
 
 #[derive(serde::Serialize, serde::Deserialize, Debug)]

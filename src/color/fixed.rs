@@ -2,9 +2,9 @@ use std::fmt::Display;
 use std::rc::Rc;
 use std::{borrow::Cow, str::FromStr};
 
-use super::xterm::{self};
-use super::ColorLibrary;
-use super::{xterm::XtermColors, Color, ColorSource, ColorValue, Source};
+use super::libraries::xterm::XtermColors;
+use super::libraries::ColorLibrary;
+use super::{Color, ColorSource, ColorValue, Source};
 
 ///Ansi256 color value represented by a u8. Can be created from [XtermColors] name with
 ///[FromStr].

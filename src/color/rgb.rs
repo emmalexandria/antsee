@@ -4,8 +4,8 @@ use std::{fmt::Display, rc::Rc, str::FromStr};
 use serde::{de::Visitor, ser::SerializeSeq, Deserialize, Serialize};
 
 use super::{
-    css::{self, CssColors},
-    ColorLibrary, ColorSource, ColorValue, Source, XtermColors,
+    libraries::{css::CssColors, xterm::XtermColors, ColorLibrary},
+    ColorSource, ColorValue, Source,
 };
 
 /** The RGB colour type, containing a simple u8 array to represent the color value */

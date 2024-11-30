@@ -13,6 +13,4 @@ pub mod style;
 #[doc(inline)]
 pub use color::Color;
 #[doc(inline)]
-pub use color::{Ansi, Fixed, Rgb};
-#[doc(inline)]
 pub use style::{attributes::Attributes, Style};
