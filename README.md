@@ -15,12 +15,14 @@ It also aims to fix other small annoyances, like attributes directly on style ty
 
 ### Extensive colour libraries 
 `antsee` provides full libraries of CSS and xterm colour names which can be used to set the values of RGB or Fixed (ANSI256) colours. These libraries 
-contain the colour names, RGB values, and ANSI256 index in the case of the xterm library. In addition, RGB colours can be set with hex values, and ANSI16 colours can be set with string names such as 
-BrightGreen or brightgreen. 
+contain the colour names, RGB values, and ANSI256 index in the case of the xterm library. 
 
 ### Flexible colour parsing
 Every color type in `antsee` has a `FromStr` implementation. RGB colors can be set with hex values, RGB values, or colour library names. ANSI256 (Fixed) colors can be set with xterm colour names or `u8` indices, and ANSI16 colors can be set using string color names (e.g. `BrightRed`). When being parsed from a string, the colour libraries are distinguished with function like wrappers: 
 ```
+// All valid ways to set an RGB color 
+#432383
+[32, 45, 63]
 css(red)
 xterm(Seafoam)
 ```
