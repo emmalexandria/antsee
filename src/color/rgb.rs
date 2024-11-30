@@ -1,11 +1,11 @@
-use std::{rc::Rc, str::FromStr};
+use std::{fmt::Display, rc::Rc, str::FromStr};
 
 #[cfg(feature = "serde")]
 use serde::{de::Visitor, ser::SerializeSeq, Deserialize, Serialize};
 
 use super::{
     css::{self, CssColors},
-    ColorValue, Source,
+    ColorLibrary, ColorSource, ColorValue, Source, XtermColors,
 };
 
 /** The RGB colour type, containing a simple u8 array to represent the color value */
@@ -27,8 +27,18 @@ pub enum RgbError {
 
 impl Rgb {
     ///Construct a new Rgb instance from an array of u8s
-    pub fn new(val: [u8; 3]) -> Rgb {
-        Rgb(val, Source::Inactive(Rc::from("")))
+    pub fn new() -> Rgb {
+        Rgb([0; 3], Source::Inactive(Rc::from("")))
+    }
+
+    pub fn rgb(mut self, val: [u8; 3]) -> Self {
+        self.0 = val;
+        self
+    }
+
+    pub fn hex(mut self, hex: &str) -> Result<Self, RgbError> {
+        self = Self::from_hex(hex)?;
+        Ok(self)
     }
 
     ///Set the RGB color with a hexadecimal color string
@@ -58,7 +68,13 @@ impl Rgb {
 
 impl From<CssColors> for Rgb {
     fn from(value: CssColors) -> Self {
-        Rgb(value.rgb(), Source::Active(Rc::from(value.css_name())))
+        Rgb(value.rgb(), Source::Active(Rc::from(value.color_name())))
+    }
+}
+
+impl From<XtermColors> for Rgb {
+    fn from(value: XtermColors) -> Self {
+        Rgb(value.rgb(), Source::Active(Rc::from(value.color_name())))
     }
 }
 
@@ -71,9 +87,16 @@ impl FromStr for Rgb {
             return Self::from_hex(s);
         }
         if s.starts_with("css(") && s.ends_with(')') {
-            let color_name = css::unwrap_name(s);
+            let color_name = CssColors::unwrap_name(s);
             let css_color = CssColors::get_name(color_name);
             if let Some(color) = css_color {
+                return Ok(Self::from(color));
+            }
+        }
+        if s.starts_with("xterm(") && s.ends_with(")") {
+            let color_name = XtermColors::unwrap_name(s);
+            let xterm_color = XtermColors::get_name(color_name);
+            if let Some(color) = xterm_color {
                 return Ok(Self::from(color));
             }
         }
@@ -89,7 +112,10 @@ impl Serialize for Rgb {
     {
         if let Source::Active(s) = self.1.clone() {
             if let Some(c) = CssColors::get_name(&s) {
-                return serializer.serialize_str(&css::wrap_name(&s));
+                return serializer.serialize_str(&CssColors::wrap_name(&s));
+            }
+            if let Some(c) = XtermColors::get_name(&s) {
+                return serializer.serialize_str(&XtermColors::wrap_name(&s));
             }
             return serializer.serialize_str(&s);
         }
@@ -98,6 +124,23 @@ impl Serialize for Rgb {
         seq.serialize_element(&self.0[1])?;
         seq.serialize_element(&self.0[2])?;
         seq.end()
+    }
+}
+
+impl Display for Rgb {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if let Source::Active(c) = self.clone().1 {
+            if CssColors::get_name(&c).is_some() {
+                write!(f, "css({})", c)?;
+                return Ok(());
+            }
+            if XtermColors::get_name(&c).is_some() {
+                write!(f, "xterm({})", c)?;
+                return Ok(());
+            }
+        }
+        write!(f, "rgb({},{},{})", self.0[0], self.0[1], self.0[2])?;
+        Ok(())
     }
 }
 
@@ -177,7 +220,7 @@ mod rgb_tests {
             rgb.unwrap(),
             Rgb(
                 CssColors::Red.rgb(),
-                Source::Active(Rc::from(CssColors::Red.css_name()))
+                Source::Active(Rc::from(CssColors::Red.color_name()))
             )
         );
     }
@@ -194,7 +237,7 @@ mod rgb_tests {
 
     #[test]
     fn test_serialize_array() {
-        let rgb = Rgb::new([32, 45, 0]);
+        let rgb = Rgb::new().rgb([32, 45, 0]);
 
         assert_tokens(
             &rgb,

@@ -1,7 +1,9 @@
+use std::fmt::Display;
 use std::rc::Rc;
 use std::{borrow::Cow, str::FromStr};
 
-use super::xterm::{self, wrap_name};
+use super::xterm::{self};
+use super::ColorLibrary;
 use super::{xterm::XtermColors, Color, ColorSource, ColorValue, Source};
 
 ///Ansi256 color value represented by a u8. Can be created from [XtermColors] name with
@@ -19,7 +21,7 @@ impl Fixed {
     pub fn from(color: XtermColors) -> Self {
         Self(
             color.ansi256(),
-            Source::Active(Rc::from(color.xterm_name())),
+            Source::Active(Rc::from(color.color_name())),
         )
     }
 
@@ -31,7 +33,7 @@ impl Fixed {
     /// Set the [XtermColors] of the color
     pub fn set_color(&mut self, color: XtermColors) {
         self.0 = color.ansi256();
-        self.1 = Source::Active(Rc::from(color.xterm_name()));
+        self.1 = Source::Active(Rc::from(color.color_name()));
     }
 
     ///Set the [XtermColors] of the color
@@ -52,6 +54,12 @@ impl Fixed {
     }
 }
 
+impl Display for Fixed {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
 impl ColorSource for Fixed {
     type ExternalSource = String;
     fn set_external_source(&mut self, value: Self::ExternalSource) {
@@ -69,7 +77,7 @@ impl From<XtermColors> for Fixed {
     fn from(value: XtermColors) -> Self {
         Self(
             value.ansi256(),
-            Source::Active(Rc::from(value.xterm_name())),
+            Source::Active(Rc::from(value.color_name())),
         )
     }
 }
@@ -88,12 +96,12 @@ impl FromStr for Fixed {
     type Err = FixedError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if s.starts_with("xterm(") && s.ends_with(")") {
-            let color_name = xterm::unwrap_name(s);
+            let color_name = XtermColors::unwrap_name(s);
             let xterm_color = XtermColors::get_name(color_name);
             if let Some(color) = xterm_color {
                 return Ok(Self(
                     color.ansi256(),
-                    Source::Active(Rc::from(color.xterm_name())),
+                    Source::Active(Rc::from(color.color_name())),
                 ));
             } else {
                 return Err(FixedError::InvalidColorName);
@@ -110,7 +118,7 @@ impl serde::Serialize for Fixed {
         S: serde::Serializer,
     {
         if let Source::Active(s) = self.1.clone() {
-            return serializer.serialize_str(&wrap_name(&s));
+            return serializer.serialize_str(&XtermColors::wrap_name(&s));
         }
         serializer.serialize_u8(self.0)
     }
@@ -142,7 +150,7 @@ impl<'de> serde::de::Visitor<'de> for FixedVisitor {
             if let Some(color) = XtermColors::get_name(name) {
                 return Ok(Fixed(
                     color.ansi256(),
-                    Source::Active(Rc::from(color.xterm_name())),
+                    Source::Active(Rc::from(color.color_name())),
                 ));
             }
         }
@@ -164,7 +172,6 @@ impl<'de> serde::Deserialize<'de> for Fixed {
 mod fixed_tests {
     use serde_test::{assert_de_tokens, assert_ser_tokens, assert_tokens, Token};
 
-    use super::super::xterm::wrap_name;
     use super::*;
     #[test]
     fn test_fixed_serialize_u8() {

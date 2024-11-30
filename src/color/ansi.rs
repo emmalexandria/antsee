@@ -4,7 +4,6 @@ use super::ColorValue;
 
 #[repr(u8)]
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Default)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize))]
 pub enum Ansi {
     #[default]
     Default = 0,
@@ -134,6 +133,16 @@ impl<'de> serde::Deserialize<'de> for Ansi {
         D: serde::Deserializer<'de>,
     {
         deserializer.deserialize_string(AnsiVisitor)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl serde::Serialize for Ansi {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(&self.to_string())
     }
 }
 

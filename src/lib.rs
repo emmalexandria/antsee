@@ -15,4 +15,4 @@ pub use color::Color;
 #[doc(inline)]
 pub use color::{Ansi, Fixed, Rgb};
 #[doc(inline)]
-pub use style::{Attributes, Style};
+pub use style::{attributes::Attributes, Style};

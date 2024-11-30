@@ -1,3 +1,5 @@
+use super::ColorLibrary;
+
 macro_rules! xterm_colors {
     (
         $enum_name:ident {
@@ -11,41 +13,38 @@ macro_rules! xterm_colors {
             )*
         }
 
-        impl $enum_name {
-            ///Get all values of variant
-            pub fn get_color(&'_ self) -> (&'_ str, u8, [u8;3]) {
-                match self {
-                    $(
-                    Self::$variant_name => ($xterm_name, $color_number, [$r, $g, $b]),
-                    )*
+        impl ColorLibrary for $enum_name {
+            const WRAPPER: &str="xterm()";
+
+            fn wrap_name(str: &str) -> String {
+                let wrapped_str = format!("xterm({})", str);
+                return wrapped_str;
+}
+
+            fn unwrap_name(str: &str) -> &str {
+                if str.len() < "xterm()".len() {
+                    return str;
                 }
+                return &str[6..str.len() - 1];
             }
-            ///Get rgb value of variant
-            pub fn rgb(&self) -> [u8;3] {
-                match self {
-                    $(
-                        $enum_name::$variant_name=> [$r, $g, $b],
-                    )*
-                }
-            }
-            ///Get ansi256 code of variant
-            pub fn ansi256(&self) -> u8 {
-                match self {
-                    $(
-                        $enum_name::$variant_name => $color_number,
-                    )*
-                }
-            }
-            ///Get xterm name of variant
-            pub fn xterm_name(&self) -> &'static str {
+
+            fn color_name(&self) -> &'static str {
                 match self {
                     $(
                         $enum_name::$variant_name => $xterm_name,
                     )*
                 }
             }
-            ///Get variant by Xterm name
-            pub fn get_name(name: &str) -> Option<Self> {
+
+            fn rgb(&self) -> [u8;3] {
+                match self {
+                    $(
+                        $enum_name::$variant_name=> [$r, $g, $b],
+                    )*
+                }
+            }
+
+            fn get_name(name: &str) -> Option<Self> {
                 match name {
                     $(
                         $xterm_name => Some(Self::$variant_name),
@@ -53,7 +52,19 @@ macro_rules! xterm_colors {
                     _ => None
                 }
             }
-            ///Get variant by ansi256 code
+
+
+        }
+
+        impl $enum_name {
+
+            pub fn ansi256(&self) -> u8 {
+                match self {
+                    $(
+                        $enum_name::$variant_name => $color_number,
+                    )*
+                }
+            }
             pub fn get_ansi256(ansi256: u8) -> Self {
                 match ansi256 {
                     $(
@@ -62,20 +73,7 @@ macro_rules! xterm_colors {
                 }
             }
         }
-        // Add utility methods to the enum
     };
-}
-
-pub fn wrap_name(str: &str) -> String {
-    let wrapped_str = format!("xterm({})", str);
-    return wrapped_str;
-}
-
-pub fn unwrap_name(str: &str) -> &str {
-    if str.len() < "xterm()".len() {
-        return str;
-    }
-    return &str[6..str.len() - 1];
 }
 
 xterm_colors! {

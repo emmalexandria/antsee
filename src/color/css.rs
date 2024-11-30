@@ -1,3 +1,5 @@
+use super::ColorLibrary;
+
 macro_rules! css_colors {
     (
         $enum_name:ident {
@@ -11,25 +13,22 @@ macro_rules! css_colors {
             )*
         }
 
-        // Implement the trait for the enum
-        impl $enum_name {
-            pub fn get_color(&'_ self) -> (&'_ str, [u8;3]) {
-                match self {
-                    $(
-                    Self::$variant_name => ($css_name, [$r, $g, $b]),
-                    )*
-                }
+        impl ColorLibrary for $enum_name {
+            const WRAPPER: &str = "css()";
+
+            fn wrap_name(str: &str) -> String {
+                let wrapped_str = format!("css({})", str);
+                return wrapped_str;
             }
 
-            pub fn rgb(&self) -> [u8;3] {
-                match self {
-                    $(
-                        $enum_name::$variant_name=> [$r, $g, $b],
-                    )*
+            fn unwrap_name(str: &str) -> &str {
+                if str.len() < "css()".len() {
+                    return str;
                 }
+                return &str[4..str.len() - 1];
             }
 
-            pub fn css_name(&self) -> &'static str {
+            fn color_name(&self) -> &'static str {
                 match self {
                     $(
                         $enum_name::$variant_name => $css_name,
@@ -37,7 +36,7 @@ macro_rules! css_colors {
                 }
             }
 
-            pub fn get_name(name: &str) -> Option<Self> {
+            fn get_name(name: &str) -> Option<Self> {
                 match name {
                     $(
                         $css_name => Some(Self::$variant_name),
@@ -45,21 +44,17 @@ macro_rules! css_colors {
                     _ => None
                 }
             }
+
+            fn rgb(&self) -> [u8;3] {
+                match self {
+                    $(
+                        $enum_name::$variant_name=> [$r, $g, $b],
+                    )*
+                }
+            }
         }
         // Add utility methods to the enum
     };
-}
-
-pub fn wrap_name(str: &str) -> String {
-    let wrapped_str = format!("css({})", str);
-    return wrapped_str;
-}
-
-pub fn unwrap_name(str: &str) -> &str {
-    if str.len() < "css()".len() {
-        return str;
-    }
-    return &str[4..str.len() - 1];
 }
 
 css_colors! {
