@@ -162,7 +162,7 @@ impl<'de> serde::Deserialize<'de> for Fixed {
 
 #[cfg(test)]
 mod fixed_tests {
-    use serde_test::{assert_de_tokens, assert_ser_tokens, assert_tokens, Token};
+    use serde_test::{assert_tokens, Token};
 
     use super::*;
     #[test]

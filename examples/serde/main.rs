@@ -1,5 +1,4 @@
-use bat::assets::HighlightingAssets;
-use bat::{Input, PrettyPrinter};
+use bat::PrettyPrinter;
 use std::fmt::Display;
 use std::str::FromStr;
 
