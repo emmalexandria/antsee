@@ -1,4 +1,4 @@
-use antsee::{color::libraries::xterm::XtermColors, style::Style, Attributes, Color, Fixed};
+use antsee::{Attributes, Color, Fixed, Style, XtermColors};
 use std::str::FromStr;
 
 struct Config {

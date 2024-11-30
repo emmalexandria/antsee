@@ -1,11 +1,12 @@
-use antsee::color::libraries::xterm::XtermColors;
 use bat::assets::HighlightingAssets;
 use bat::{Input, PrettyPrinter};
 use std::fmt::Display;
 use std::str::FromStr;
 
-use antsee::{Ansi, Attributes, Color, Fixed, Rgb, Style};
-use serde::Serialize;
+use antsee::{
+    color::{Ansi, Fixed, Rgb},
+    Attributes, Color, Style, XtermColors,
+};
 
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
 struct SerdeExample {

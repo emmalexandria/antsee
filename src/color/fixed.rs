@@ -2,9 +2,9 @@ use std::fmt::Display;
 use std::rc::Rc;
 use std::{borrow::Cow, str::FromStr};
 
-use super::libraries::xterm::XtermColors;
 use super::libraries::ColorLibrary;
-use super::{Color, ColorSource, ColorValue, Source};
+use super::libraries::XtermColors;
+use super::{Color, ColorFromStrError, ColorSource, ColorValue, Source};
 
 ///Ansi256 color value represented by a u8. Can be created from [XtermColors] name with
 ///[FromStr].
@@ -84,16 +84,8 @@ impl From<XtermColors> for Fixed {
 
 impl ColorValue for Fixed {}
 
-///Possible errors when parsing Ansi256 from string. Required by [FromStr]
-pub enum FixedError {
-    ///Color name is not in [XtermColors]
-    InvalidColorName,
-    ///String is not an [XtermColors] string
-    InvalidString,
-}
-
 impl FromStr for Fixed {
-    type Err = FixedError;
+    type Err = ColorFromStrError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if s.starts_with("xterm(") && s.ends_with(")") {
             let color_name = XtermColors::unwrap_name(s);
@@ -104,10 +96,10 @@ impl FromStr for Fixed {
                     Source::Active(Rc::from(color.color_name())),
                 ));
             } else {
-                return Err(FixedError::InvalidColorName);
+                return Err(ColorFromStrError::InvalidName);
             }
         }
-        Err(FixedError::InvalidString)
+        Err(ColorFromStrError::InvalidString)
     }
 }
 

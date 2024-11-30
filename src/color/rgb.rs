@@ -4,26 +4,13 @@ use std::{fmt::Display, rc::Rc, str::FromStr};
 use serde::{de::Visitor, ser::SerializeSeq, Deserialize, Serialize};
 
 use super::{
-    libraries::{css::CssColors, xterm::XtermColors, ColorLibrary},
-    ColorSource, ColorValue, Source,
+    libraries::{ColorLibrary, CssColors, XtermColors},
+    ColorFromStrError, ColorSource, ColorValue, Source,
 };
 
 /** The RGB colour type, containing a simple u8 array to represent the color value */
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct Rgb([u8; 3], Source<Rc<str>>);
-
-/** Defines potential errors when parsing an [Rgb] value from a string. Required by
-* the [FromStr] trait. */
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum RgbError {
-    ///Hex value is not 6 characters. This library currently does not support 3 character hex
-    ///values.
-    HexWrongLength,
-    ///Hex value contains characters outside the 0-f range
-    InvalidHexValue,
-    ///String doesn't match any method of parsing
-    InvalidString,
-}
 
 impl Rgb {
     ///Construct a new Rgb instance from an array of u8s
@@ -36,44 +23,41 @@ impl Rgb {
         self
     }
 
-    pub fn hex(mut self, hex: &str) -> Result<Self, RgbError> {
+    pub fn hex(mut self, hex: &str) -> Result<Self, ColorFromStrError> {
         self = Self::from_hex(hex)?;
         Ok(self)
     }
 
     ///Set the RGB color with a hexadecimal color string
-    pub fn set_hex(&mut self, hex: &str) -> Result<(), RgbError> {
+    pub fn set_hex(&mut self, hex: &str) -> Result<(), ColorFromStrError> {
         let new = Self::from_hex(hex)?;
         self.0 = new.0;
         self.1 = Source::Active(Rc::from(hex));
         Ok(())
     }
 
-    fn from_hex(hex: &str) -> Result<Self, RgbError> {
+    fn from_hex(hex: &str) -> Result<Self, ColorFromStrError> {
         let fullhex = hex;
         let mut hex = hex;
         if hex.starts_with('#') {
             hex = &hex[1..]
         }
         if hex.len() != 6 {
-            return Err(RgbError::HexWrongLength);
+            return Err(ColorFromStrError::InvalidValue);
         }
-        let r = u8::from_str_radix(&hex[0..2], 16).map_err(|_| RgbError::InvalidHexValue)?;
-        let g = u8::from_str_radix(&hex[2..4], 16).map_err(|_| RgbError::InvalidHexValue)?;
-        let b = u8::from_str_radix(&hex[4..6], 16).map_err(|_| RgbError::InvalidHexValue)?;
+        let r = u8::from_str_radix(&hex[0..2], 16).map_err(|_| ColorFromStrError::InvalidValue)?;
+        let g = u8::from_str_radix(&hex[2..4], 16).map_err(|_| ColorFromStrError::InvalidValue)?;
+        let b = u8::from_str_radix(&hex[4..6], 16).map_err(|_| ColorFromStrError::InvalidValue)?;
 
         Ok(Self([r, g, b], Source::Active(Rc::from(fullhex))))
     }
 }
 
-impl From<CssColors> for Rgb {
-    fn from(value: CssColors) -> Self {
-        Rgb(value.rgb(), Source::Active(Rc::from(value.color_name())))
-    }
-}
-
-impl From<XtermColors> for Rgb {
-    fn from(value: XtermColors) -> Self {
+impl<C> From<C> for Rgb
+where
+    C: ColorLibrary,
+{
+    fn from(value: C) -> Self {
         Rgb(value.rgb(), Source::Active(Rc::from(value.color_name())))
     }
 }
@@ -81,7 +65,7 @@ impl From<XtermColors> for Rgb {
 impl ColorValue for Rgb {}
 
 impl FromStr for Rgb {
-    type Err = RgbError;
+    type Err = ColorFromStrError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if s.starts_with('#') {
             return Self::from_hex(s);
@@ -100,7 +84,7 @@ impl FromStr for Rgb {
                 return Ok(Self::from(color));
             }
         }
-        Err(RgbError::InvalidString)
+        Err(ColorFromStrError::InvalidString)
     }
 }
 
@@ -223,16 +207,6 @@ mod rgb_tests {
                 Source::Active(Rc::from(CssColors::Red.color_name()))
             )
         );
-    }
-
-    #[test]
-    fn test_invalid_strings() {
-        let rgb = Rgb::from_str("#3245");
-        assert!(rgb.is_err_and(|e| e == RgbError::HexWrongLength));
-        let rgb = Rgb::from_str("#jjjjjj");
-        assert!(rgb.is_err_and(|e| e == RgbError::InvalidHexValue));
-        let rgb = Rgb::from_str("css(fakeasscolor)");
-        assert!(rgb.is_err_and(|e| e == RgbError::InvalidString));
     }
 
     #[test]

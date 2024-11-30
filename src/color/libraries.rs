@@ -1,5 +1,17 @@
-pub mod css;
-pub mod xterm;
+/*!
+
+[CssColors](libraries::CssColors) and [XtermColors](libraries::XtermColors) are re-exported from private modules which contain macros to generate color enums.
+These enums implement [ColorLibrary](libraries::ColorLibrary).
+
+*/
+
+mod css;
+mod xterm;
+
+#[doc(inline)]
+pub use css::CssColors;
+#[doc(inline)]
+pub use xterm::XtermColors;
 
 ///Trait defining common functions for macro based colour libraries ([xterm], [css])
 pub trait ColorLibrary

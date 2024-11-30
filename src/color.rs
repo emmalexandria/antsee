@@ -1,3 +1,15 @@
+/*!
+# Color sources
+[Rgb] and [Fixed] both store a string value called the 'external source'. This value is set whenever these color formats are constructed from a color name or hex value. This is what allows for the serialisation system.
+
+This is mediated by the trait [ColorSource](color::ColorSource). To disable
+the external source and serialise to the data value of the color, simply:
+```rust
+let color: Color = Rgb::from_str("#432312").unwrap();
+color.source_internal() // color will now serialize from the interal [u8;3] representation
+```
+*/
+
 /** ansi provides a representation of the basic ANSI colors as an enum*/
 pub mod ansi;
 /** fixed provides a representation of the ANSI256 palette, including parsing from [XtermColors] */
@@ -6,16 +18,21 @@ pub mod fixed;
 * and hexadecimals */
 pub mod rgb;
 
+///libraries is the module containing the CSS and Xterm color libraries
 pub mod libraries;
 use std::fmt::Display;
 
+#[doc(inline)]
 pub use {ansi::Ansi, fixed::Fixed, rgb::Rgb};
-///Represents a single color in [ANSI16], ANSI256, or [RGB]
 
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ColorFromStrError {
     InvalidName,
+    InvalidValue,
+    InvalidString,
 }
-///Enum representing a generic color of any format.
+
+///Represents a single color in [ANSI16], ANSI256, or [RGB]
 #[derive(Clone, PartialEq, Debug)]
 #[cfg_attr(
     feature = "serde",
@@ -138,7 +155,7 @@ where
 
 #[cfg(test)]
 mod color_tests {
-    use libraries::xterm::XtermColors;
+    use libraries::XtermColors;
     use serde_test::{assert_tokens, Token};
 
     use super::*;
