@@ -50,7 +50,7 @@ impl Style {
         self
     }
 
-    ///Set the attributes of the style while still receiving self back
+    ///Set the attributes of the style
     pub fn attributes(mut self, attributes: Attributes) -> Self {
         self.attributes = attributes;
         self

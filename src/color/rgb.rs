@@ -18,11 +18,13 @@ impl Rgb {
         Rgb([0; 3], Source::Inactive(Rc::from("")))
     }
 
+    ///Set the value of the colour with RGB
     pub fn rgb(mut self, val: [u8; 3]) -> Self {
         self.0 = val;
         self
     }
 
+    ///Set the value of the colour with a hex string
     pub fn hex(mut self, hex: &str) -> Result<Self, ColorFromStrError> {
         self = Self::from_hex(hex)?;
         Ok(self)
@@ -34,6 +36,19 @@ impl Rgb {
         self.0 = new.0;
         self.1 = Source::Active(Rc::from(hex));
         Ok(())
+    }
+
+    ///Set the RGB color with a value from [CssColors] or [XtermColors]
+    pub fn color<C: ColorLibrary>(mut self, color: C) -> Self {
+        self.0 = color.rgb();
+        self.1 = Source::Active(Rc::from(color.color_name()));
+        self
+    }
+
+    ///Set the RGB color with a value from [CssColors] or [XtermColors]
+    pub fn set_color<C: ColorLibrary>(&mut self, color: C) {
+        self.0 = color.rgb();
+        self.1 = Source::Active(Rc::from(color.color_name()))
     }
 
     fn from_hex(hex: &str) -> Result<Self, ColorFromStrError> {

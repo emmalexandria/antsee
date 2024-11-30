@@ -5,20 +5,21 @@ use std::fmt::Display;
 pub struct Attribute(pub bool);
 
 impl Attribute {
+    ///Create a new attribute
     pub fn new(value: bool) -> Self {
         Self(value)
     }
-
+    ///Set the attribute value
     pub fn set(mut self, val: bool) -> Self {
         self.0 = val;
         self
     }
-
+    ///Enable the attribute
     pub fn on(mut self) -> Self {
         self.0 = true;
         self
     }
-
+    ///Disable the attribute
     pub fn off(mut self) -> Self {
         self.0 = false;
         self
@@ -109,9 +110,9 @@ impl Attributes {
             && !self.hidden.0
             && !self.strikethrough.0
     }
-
+    ///Returns a list of all the attributes
     pub fn list(&self) -> Vec<&Attribute> {
-        return vec![
+        vec![
             &self.bold,
             &self.dimmed,
             &self.italic,
@@ -120,7 +121,7 @@ impl Attributes {
             &self.reverse,
             &self.hidden,
             &self.strikethrough,
-        ];
+        ]
     }
 
     ///Set the bold attribute to true

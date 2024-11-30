@@ -44,7 +44,6 @@ fn main() {
 
 fn serialize() {
     let config = SerdeExample::default();
-    let config_format = format!("{:#}", config);
     let output = toml::to_string_pretty(&config).unwrap();
 
     println!(
@@ -65,8 +64,6 @@ fn serialize() {
     );
     print_highlighted(&output, Some("toml"));
 }
-
-fn deserialize() {}
 
 fn print_highlighted(text: &str, language: Option<&str>) {
     let mut printer = PrettyPrinter::new();
